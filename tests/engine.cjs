@@ -1,4 +1,5 @@
 const fs=require('node:fs');
+const path=require('node:path');
 const vm=require('node:vm');
 const assert=require('node:assert/strict');
 
@@ -26,7 +27,7 @@ const browser={
   performance:{now:()=>2000},Date,Math,Number,Array,Object,String,JSON,Uint8Array,console
 };
 vm.createContext(browser);
-vm.runInContext(fs.readFileSync('afterglow/game/main.js','utf8'),browser,{timeout:1500});
+vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/main.js'),'utf8'),browser,{timeout:1500});
 testApi=browser.window.__afterglowTest;
 assert(testApi,'A test interface must exist');
 let state=testApi.state();

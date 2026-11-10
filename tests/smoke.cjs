@@ -1,6 +1,7 @@
 const { chromium, devices } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const nodePath = require('node:path');
 
 function findPath(tiles) {
   const C=6,R=7;
@@ -43,7 +44,7 @@ function findPath(tiles) {
   await page.locator('[data-setting="sound"]').click();
   assert.notEqual(await page.locator('[data-setting="sound"]').innerText(),sound);
   await page.locator('[data-view="play"]').click();
-  await page.screenshot({path:'afterglow/tests/smoke-mobile.png',fullPage:true});
+  await page.screenshot({path:nodePath.join(__dirname,'smoke-mobile.png'),fullPage:true});
   assert.deepEqual(errors,[],'No uncaught JavaScript errors');
   console.log('PASS: onboarding, valid gesture, scoring, persistence, city, daily, settings, responsive screenshot, no JS errors');
   await browser.close();
