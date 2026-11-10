@@ -5,13 +5,25 @@ Jeu Android de puzzle à réactions en chaîne — **© 2026 LayAdam corp.**
 > Une cité plongée dans le noir. Reliez trois cristaux ou plus, déclenchez des
 > réactions spectaculaires et rallumez progressivement les quartiers.
 
-## Version 1.1.0 — refonte graphique et sonore
+## Version 1.2.0 — pouvoirs, chrono et progression vivante
 
 La base jouable comprend :
 
 - Commandes tactiles par glissement et système de chemins de couleur.
 - Cristaux vectoriels facettés, relief, reflets, halos, chute animée et ondes de choc.
 - Ondes spéciales pour les chaînes de 6+ et 9+ cristaux, combos et vibrations.
+- Quatre pouvoirs consommables ciblés : Bombe Nova (zone 3 × 3), Laser H,
+  Laser V et Prisme Chromatique (suppression de tous les cristaux d'une couleur).
+- Grands enchaînements qui déclenchent automatiquement un laser horizontal
+  et, dès 9 cristaux, un laser vertical supplémentaire.
+- Indice manuel : chemin surligné en or, avec aide automatique après 11 secondes
+  sans action. L'aide indique une chaîne réalisable et favorise les objectifs.
+- Chronomètre permanent et défi quotidien à durée limitée (2 min 30).
+- Missions de niveaux variées : signal classique, triple couleur, réacteur à
+  recharger, mission express à coups limités et défi chrono.
+- Jauge néon et recharge de pouvoirs, série de victoires et récompense de vitesse.
+- Boutique de pouvoirs à éclats, colis gratuit quotidien, trois contrats du jour,
+  coffres aux étapes de progression et seconde chance facultative contre éclats.
 - 80 niveaux de campagne générés par des graines déterministes.
 - Objectifs de deux couleurs, nombre de coups, étoiles et éclats.
 - Ville cyberpunk en profondeur : architecture à trois plans, enseignes, lune,
@@ -26,7 +38,7 @@ La base jouable comprend :
 - Projet Android natif embarquant l'intégralité du jeu dans une WebView locale.
 
 La **version Android 1.0.0 de développement** a été compilée avec succès par GitHub
-Actions le 10 novembre 2026. La V1.1.0 ajoute les améliorations détaillées ci-dessus.
+Actions le 10 novembre 2026. La V1.2.0 introduit les mécaniques détaillées ci-dessus.
 Ce dépôt ne constitue pas à lui seul une publication Google Play. L'installation
 sur appareils physiques, la signature de production, la qualité graphique finale
 et l'équilibrage doivent être validés avant de parler de version commerciale terminée.
@@ -46,18 +58,20 @@ Android pour un usage intégralement hors ligne.
 1. Dans le dépôt, ouvrir l'onglet **Actions**.
 2. Choisir **Android APK** puis **Run workflow**.
 3. Attendre le statut vert : les sources HTML/CSS/JS sont intégrées à l'APK.
-4. Télécharger l'artefact **AFTERGLOW-v1.1-Android-debug-APK**.
+4. Télécharger l'artefact **AFTERGLOW-v1.2-Android-debug-APK**.
 5. Extraire `app-debug.apk` et l'installer sur un smartphone Android compatible.
 
 **Attention :** APK de test (clé de débogage), pas APK commercial signé. Une
 clé Android debug régénérée sur un nouveau runner CI peut empêcher une mise à
 jour par-dessus une ancienne version : une signature stable est indispensable
 pour les futures mises à jour sans désinstallation ni perte de sauvegarde.
-La **V1.1 Preview** utilise donc temporairement le package Android indépendant
-`com.layadam.afterglow.preview` et apparaît sous le nom `AFTERGLOW PREVIEW`.
-Elle s'installe à côté de la V1.0, dont la progression est intacte, mais elle
-commence une sauvegarde distincte. **Ne pas supprimer la V1.0 pour tester la
-preview.** La signature Play App Signing, la génération d'un fichier AAB de release, les tests
+La **V1.2 Preview** utilise donc temporairement le package Android indépendant
+`com.layadam.afterglow.preview12` et apparaît sous le nom `AFTERGLOW V1.2`.
+Elle s'installe à côté des V1.0 et V1.1, dont les sauvegardes restent intactes,
+mais elle **commence une nouvelle progression** : les données Android d'un package
+ne sont pas automatiquement transférées à un autre. Ne désinstallez pas les
+versions précédentes avant d'avoir validé cette V1.2. La signature Play App
+Signing, la génération d'un fichier AAB de release, les tests
 Samsung et la fiche Play Store restent à finaliser. L'application cible l'API 36
 (Android 16), avec Android 8.0 comme version minimale.
 
@@ -76,11 +90,14 @@ THIRD_PARTY.md             Bibliothèques et licences redistribuées
 
 ```bash
 node tests/engine.cjs
+node tests/skills.cjs
+node tests/assets.cjs
 ```
 
 Les tests du moteur couvrent le parcours de 80 niveaux et au moins 560 coups,
-la chute des cristaux, le rendu Canvas avec contexte simulé, la persistance, la
-graine quotidienne et les récompenses. `tests/smoke.cjs` est un test visuel
+la chute des cristaux, le rendu Canvas avec contexte simulé, la persistance,
+les indices, les pouvoirs, les missions, la boutique, le défi quotidien et les
+récompenses. `tests/smoke.cjs` est un test visuel
 Playwright supplémentaire, à exécuter dans un environnement autorisant Chromium
 et avec le serveur local actif.
 

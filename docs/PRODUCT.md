@@ -12,11 +12,11 @@
 
 | Période | Récompense ludique | Implémentation v1 |
 | --- | --- | --- |
-| 15–60 secondes | Chaîne lumineuse, explosion, score | Oui |
-| 3–5 minutes | Objectifs, étoiles, nouvelle rue | Oui |
-| Plusieurs sessions | Restauration de la cité, thèmes | Oui, visuel procédural |
-| Quotidienne | Grille du jour reproductible, score à partager | Oui, local |
-| Long terme | 80 niveaux, huit quartiers | Oui, génération déterministe |
+| 15–60 secondes | Chaîne lumineuse, laser automatique, bombe, score | Oui, v1.2 |
+| 3–5 minutes | Objectifs variables, étoiles, nouvelle rue, série | Oui, v1.2 |
+| Plusieurs sessions | Restauration de la cité, thèmes, coffres | Oui, v1.2 |
+| Quotidienne | Défi de 150 secondes, trois missions, cadeau gratuit | Oui, local |
+| Long terme | 80 niveaux, huit quartiers, boutique de pouvoirs | Oui, v1.2 |
 
 **Différenciation :** des chaînes traçables à un doigt déclenchent une
 réanimation visible de la même métropole. C'est une combinaison de mécaniques
@@ -26,6 +26,11 @@ connues et d'une mise en scène particulière, pas une invention garantie inédi
 
 - Joueurs occasionnels 13+, sessions brèves et commandes sans apprentissage long.
 - Première phase : expérience entièrement gratuite et hors ligne.
+- Les éclats sont une monnaie exclusivement **gagnée en jeu**. La boutique de
+  pouvoirs est un mécanisme ludique, pas une passerelle de paiement. Les défis
+  restent rejouables sans achat et sans attente d'énergie.
+- Valeurs initiales à équilibrer sur appareils réels : Bombe 130, Laser H/V 110,
+  Prisme 260, lot 295 ; seconde chance +3 coups à 190 éclats.
 - Pour une sortie commerciale, étudier un achat unique de thèmes, ou des
   publicités récompensées facultatives uniquement après un test de rétention.
 - Pas de points d'énergie payants, pas de paiement nécessaire pour finir le jeu.

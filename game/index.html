@@ -21,12 +21,20 @@
       <div class="city-banner" id="city-banner"><span class="pulse-dot"></span> LA VILLE ATTEND TON ÉTINCELLE</div>
     </section>
     <section class="mission" id="mission">
-      <div class="level-line"><div><span class="eyebrow" id="mode-label">CAMPAGNE</span><h1 id="level-title">NIVEAU 01</h1></div><div class="level-pill"><span id="moves-label">24</span><small>COUPS</small></div></div>
+      <div class="level-line"><div><span class="eyebrow" id="mode-label">CAMPAGNE</span><h1 id="level-title">NIVEAU 01</h1></div><div class="mission-metrics"><div class="timer-pill" title="Temps écoulé"><span>◷</span><b id="timer-label">00:00</b></div><div class="level-pill"><span id="moves-label">24</span><small>COUPS</small></div></div></div>
       <div class="goals" id="goals" aria-label="Objectifs du niveau"></div>
       <div class="progress-track"><div id="score-bar"></div></div>
     </section>
     <section class="gameplay" id="gameplay">
       <div class="board-frame"><canvas id="board" width="600" height="700" aria-label="Grille de puzzle tactile, relier au moins trois cristaux identiques"></canvas></div>
+      <div class="powerbar" aria-label="Pouvoirs utilisables">
+        <button class="power-slot assist" id="ask-hint" title="Afficher un chemin possible"><span class="power-icon">⌁</span><small>INDICE</small></button>
+        <button class="power-slot" data-power="bomb" title="Bombe 3×3"><span class="power-icon">✹</span><small>×<b id="count-bomb">1</b></small></button>
+        <button class="power-slot" data-power="row" title="Laser horizontal"><span class="power-icon">⇆</span><small>×<b id="count-row">1</b></small></button>
+        <button class="power-slot" data-power="column" title="Laser vertical"><span class="power-icon">↕</span><small>×<b id="count-column">1</b></small></button>
+        <button class="power-slot" data-power="color" title="Prisme chromatique"><span class="power-icon">✧</span><small>×<b id="count-color">0</b></small></button>
+      </div>
+      <div class="charge-strip"><span>ÉNERGIE NÉON</span><div class="charge-track"><div id="charge-fill"></div></div><span>100% = BONUS</span></div>
       <div class="game-caption"><span id="hint-text">Glisse sur 3 cristaux identiques ou plus</span><span id="combo-text">COMBO x1</span></div>
     </section>
     <section class="secondary hidden" id="secondary"></section>
@@ -34,6 +42,7 @@
       <button class="nav-btn active" data-view="play"><span>◈</span><small>JOUER</small></button>
       <button class="nav-btn" data-view="city"><span>▥</span><small>VILLE</small></button>
       <button class="nav-btn" data-view="daily"><span>◎</span><small>DÉFI</small></button>
+      <button class="nav-btn" data-view="shop"><span>◉</span><small>BOUTIQUE</small></button>
       <button class="nav-btn" data-view="settings"><span>⚙</span><small>OPTIONS</small></button>
     </nav>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -43,6 +52,7 @@
   <script src="vendor/confetti.browser.min.js" defer></script>
   <script src="soundtrack.js" defer></script>
   <script src="visuals.js" defer></script>
+  <script src="skills.js" defer></script>
   <script src="main.js" defer></script>
 </body>
 </html>

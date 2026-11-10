@@ -10,8 +10,8 @@ android {
         applicationId 'com.layadam.afterglow'
         minSdk 26
         targetSdk 36
-        versionCode 2
-        versionName '1.1.0'
+        versionCode 3
+        versionName '1.2.0'
         resourceConfigurations += ['fr']
         manifestPlaceholders = [appLabel: 'AFTERGLOW']
     }
@@ -24,9 +24,9 @@ android {
     buildTypes {
         debug {
             // A different app ID: preserve the already installed v1.0.0 and its save.
-            applicationIdSuffix '.preview'
+            applicationIdSuffix '.preview12'
             versionNameSuffix '-preview'
-            manifestPlaceholders = [appLabel: 'AFTERGLOW PREVIEW']
+            manifestPlaceholders = [appLabel: 'AFTERGLOW V1.2']
         }
         release {
             minifyEnabled false

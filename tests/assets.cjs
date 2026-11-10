@@ -6,7 +6,7 @@ const file=(name)=>fs.readFileSync(path.join(root,name));
 const html=file('game/index.html').toString('utf8');
 const scripts=[
   'vendor/howler.core.min.js','vendor/confetti.browser.min.js',
-  'soundtrack.js','visuals.js','main.js'
+  'soundtrack.js','visuals.js','skills.js','main.js'
 ];
 let position=0;
 for(const name of scripts){
@@ -29,7 +29,7 @@ assert(file('game/vendor/LICENSE-confetti.txt').length>200);
 assert(file('game/audio/LICENSE-kenney.txt').length>80);
 assert(file('game/fonts/LICENSE-Inter.txt').length>200);
 const gradle=file('android/app/build.gradle').toString('utf8');
-assert(gradle.includes("versionName '1.1.0'"));
-assert(gradle.includes('versionCode 2'));
-assert(gradle.includes("applicationIdSuffix '.preview'"));
-console.log(`PASS: ${scripts.length} local scripts, ${samples.length} CC0 WAV files, OFL font, license notices, offline load order, v1.1.0.`);
+assert(gradle.includes("versionName '1.2.0'"));
+assert(gradle.includes('versionCode 3'));
+assert(gradle.includes("applicationIdSuffix '.preview12'"));
+console.log(`PASS: ${scripts.length} local scripts, ${samples.length} CC0 WAV files, OFL font, license notices, offline load order, v1.2.0.`);
