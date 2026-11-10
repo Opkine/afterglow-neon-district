@@ -18,20 +18,29 @@ Une expérience entièrement distincte des projets AFTERGLOW et ASTRA TIDE, avec
 - Carnet d'enquête persistant et carte des lieux non linéaire.
 - Déduction finale sur trois axes (responsable, mobile, preuve), conditionnée par des indices essentiels.
 - Deux fins narratives différentes selon le choix du joueur.
-- Ambiance acoustique originale procédurale hors ligne, vibrations et sauvegarde locale.
+- Bandes-son originales intégrées, transitions musicales entre les lieux, bruitages propres aux objets, vibrations et sauvegarde locale.
 - Fonctionnement Android immersif autonome, sans connexion, compte, publicité, achat ni suivi.
 
-## Mise à jour Android v0.3.0
+## Mise à jour Android v0.4.0 — Ambiances de lieux vivantes
 
-- Trois véritables morceaux instrumentaux originaux en Ogg Vorbis (environ 37, 40 et 43 secondes), sélectionnables : **Nocturne à l'hôtel**, **Le hall après minuit** (jazz feutré) et **Sous la verrière** (boîte à musique). Les arrangements sont reproductibles avec `tools/generate_music.py` (numpy, ffmpeg) et libres de dépendances musicales tierces.
-- Possibilité d'importer une musique de son téléphone (MP3, M4A, OGG, WAV ; 25 Mo maximum) et de l'enregistrer dans l'espace local de l'application avec IndexedDB lorsque le stockage le permet. La musique n'est pas envoyée sur Internet.
+- **Trois compositions originales entièrement réarrangées, nettement plus longues** : Chambre 307 (88 s, valse d’ombres), Grand hall (91 s, jazz noir rythmé), Jardin sous verre (93 s, folk/chambre onirique). Elles sont jouées depuis l’APK, même hors connexion. Chaque piste contient des arrangements plus fournis, de nouvelles sections mélodiques et davantage d’instruments et de percussions ; génération reproductible via `tools/arrange_v4.py`.
+- **Changement automatique à chaque lieu** : quand on quitte la chambre pour le hall puis le jardin, la musique passe à son thème avec un fondu croisé de 1,4 seconde. Pas de liste musicale à manipuler pendant l’exploration.
+- **Import musical supprimé** intégralement, y compris le sélecteur de documents Android, l’accès aux contenus utilisateur et le stockage de morceaux dans l’application.
+- **17 bruitages intégrés en Ogg Vorbis**, entre 0,9 et 3,4 secondes : mécanisme d’horloge, valise, papier, vent, registre, cloche, pluie, télégramme, appareil photo, trousseau, porte, découverte d’indice, curseur temporel, notification, témoignage, résolution et erreur. Génération reproductible via `tools/foley_v4.py`. Les différentes preuves déclenchent des signatures sonores différentes.
+- **Animation Canvas 2D dédiée à chaque lieu**, au-dessus des illustrations, sans bloquer les objets à toucher : pluie en mouvement et lumière instable dans la chambre, lustres et poussières éclairées dans le hall, dizaines de lucioles, pétales et rayons lumineux sous la verrière. Effets de lumière et transitions de scènes plus visibles. L’animation se limite à 30 images/seconde et respecte l’option d’animations réduites d’Android.
+- Volumes séparés et deux interrupteurs musique/bruitages. Notifications et confirmation restent intégrées au jeu, sans boîtes de dialogue système.
+- Pour préserver les anciennes préversions signées avec des clés temporaires, installation côte à côte sous `com.layadam.palimpseste.preview04` (« PALIMPSESTE V0.4 »). Cette nouvelle préversion démarre avec sa propre sauvegarde.
+
+## Mise à jour Android v0.3.0 (historique)
+
+- Trois premiers morceaux instrumentaux de 37 à 43 secondes et import musical personnel, **remplacés dans la v0.4**.
 - Réglages distincts du volume de la musique et des bruitages ; interrupteurs indépendants pour les désactiver.
 - Douze identités sonores différentes pour les objets inspectés : mécanique, papier, clochette, serrure, télégramme, pluie, etc.
 - Décors animés discrètement (flammes lumineuses, poussières, lucioles, transitions de scènes), portraits et souvenirs vivants, révélations mises en scène ; réduction des animations respectée.
 - Notifications contextuelles dans le jeu et **confirmation personnalisée** pour recommencer, sans fenêtre système de navigateur.
 - Écran final défilant avec illustration de fond maintenue sur toute sa hauteur.
 
-L'APK de test est signé automatiquement sur GitHub Actions avec une clé de débogage éphémère. **Pour ne pas risquer de perdre les sauvegardes des v0.1 et v0.2, la v0.3 s'installe à côté des anciennes applications** sous le nom « PALIMPSESTE V0.3 » (package `com.layadam.palimpseste.preview03`). La progression commence donc à zéro dans cette préversion ; ne désinstallez pas les précédentes si vous voulez conserver leurs sauvegardes. Une clé de signature durable sera nécessaire avant la publication et pour les vraies mises à jour. Les aides et musiques intégrées fonctionnent sans Internet.
+L'APK de test est signé automatiquement sur GitHub Actions avec une clé de débogage éphémère. Les préversions v0.3 et v0.4 s’installent chacune à côté des anciennes applications afin d’éviter tout risque de perte de sauvegarde. Une clé de signature durable sera nécessaire avant la publication et pour les vraies mises à jour. Les aides et musiques intégrées fonctionnent sans Internet.
 
 ## Construire et tester
 

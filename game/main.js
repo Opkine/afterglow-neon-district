@@ -6,7 +6,8 @@
  function read(){try{const v=JSON.parse(localStorage.getItem(SAVE_KEY));return v?.case??null;}catch(_){return null;}}
  let file=new CaseFile(read()),activeObject=null,frameIndex=0,activePerson='nina',panel=null;
  let helpPanel,memoryHintText,memoryHintButton,leadBox,leadText,leadButton,verdictHintText,verdictHintButton;
- let audioPanel,confirmPanel,audioButtons=[],personalTrackButton,musicButton,effectsButton,audioStatus;
+ let audioPanel,confirmPanel,audioButtons=[],musicButton,effectsButton;
+ let atmosphere=null;
  const sound=new window.PalimpsesteAudio();
  function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({version:1,case:file.snapshot()}));}catch(e){console.warn('Sauvegarde indisponible:',e.message);}}
  function haptic(n=13){if(navigator.vibrate)navigator.vibrate(n);}
@@ -23,6 +24,7 @@
  function start(){if(file.ending){showEnding(file.ending);return;}sound.ensure();addClass('intro','active-view',false);addClass('world','active-view',true);addClass('ending','hidden',true);renderScene();if(!localStorage.getItem('palimpseste-guide-seen')&&file.count===0){localStorage.setItem('palimpseste-guide-seen','1');openHelp();}}
  function renderScene(){const loc=sceneInfo(),idx=LOCATIONS.indexOf(loc);const img=$('sceneImage');img.src='assets/'+loc.asset;img.alt='Décor peint : '+loc.name.toLowerCase();
   $('world').setAttribute('data-scene',loc.id);img.style.animation='none';void img.offsetWidth;img.style.animation='sceneEnter 1s ease-out both';
+  sound.setLocation(loc.id);atmosphere?.fit();atmosphere?.setScene(loc.id);
   $('placeNum').textContent=String(idx+1).padStart(2,'0');$('placeName').textContent=loc.name;$('placeHint').textContent=loc.lead;
   const hotspots=$('hotspots');hotspots.innerHTML='';for(const o of OBJECTS.filter(x=>x.scene===file.scene)){
    const b=document.createElement('button');b.type='button';b.className='hotspot'+(file.clues.includes(o.id)?' found':'');b.style.left=o.x+'%';b.style.top=o.y+'%';b.textContent=file.clues.includes(o.id)?'✓':o.icon;
@@ -60,21 +62,11 @@
   const header=makeElement('div','panel-head'),caption=makeElement('span','overline','BANDES-SONS DU DOSSIER'),close=makeElement('button','close-sheet','×');
   close.type='button';close.setAttribute('aria-label','Fermer les réglages audio');close.addEventListener('click',closePanel);header.append(caption,close);audioPanel.append(header);
   audioPanel.append(makeElement('h2','audio-heading','Écouter l’enquête.'));
-  audioPanel.append(makeElement('p','panel-copy','Trois compositions originales. Sélectionne une ambiance ou apporte ton propre morceau depuis ton téléphone.'));
+  audioPanel.append(makeElement('p','panel-copy','Chaque lieu possède sa propre composition. La musique suit automatiquement tes déplacements, avec une transition douce entre les scènes.'));
   const trackList=makeElement('div','audio-track-list');Object.entries(window.PalimpsesteAudio.tracks).forEach(([id,track])=>{
-   const b=makeElement('button','audio-track'),title=makeElement('strong','',track.title),desc=makeElement('small','',track.mood),marker=makeElement('span','audio-marker','♪');
-   b.type='button';b.append(marker,title,desc);b.addEventListener('click',()=>{sound.ensure();sound.choose(id);updateAudioUI();sound.effect('page');});trackList.append(b);audioButtons.push({id,button:b});
+   const b=makeElement('div','audio-track'),title=makeElement('strong','',track.title),desc=makeElement('small','',track.mood),marker=makeElement('span','audio-marker','♪');
+   b.append(marker,title,desc);trackList.append(b);audioButtons.push({id,button:b});
   });audioPanel.append(trackList);
-  const own=makeElement('div','import-block');personalTrackButton=makeElement('button','audio-track audio-personal','＋ IMPORTER MA MUSIQUE');
-  personalTrackButton.type='button';const fileInput=document.createElement('input');fileInput.type='file';fileInput.accept='audio/*,.mp3,.m4a,.wav,.ogg';fileInput.className='audio-file-input';
-  personalTrackButton.addEventListener('click',()=>{if(sound.imported){sound.ensure();sound.choose('personal');updateAudioUI();}else fileInput.click();});
-  const importOther=makeElement('button','import-another','CHOISIR UN AUTRE FICHIER');importOther.type='button';importOther.addEventListener('click',()=>fileInput.click());
-  audioStatus=makeElement('p','audio-status','Le fichier reste dans le stockage local du jeu. Maximum 25 Mo.');
-  fileInput.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;
-   try{const result=await sound.importPersonal(f);audioStatus.textContent=result.saved?'Musique enregistrée sur cet appareil : '+result.name:'Musique prête pour cette session : '+result.name+' (stockage permanent indisponible).';toast('Musique personnelle sélectionnée : '+result.name);sound.effect('notify');}
-   catch(err){audioStatus.textContent=err.message||'Format audio non pris en charge.';toast(audioStatus.textContent);}
-   fileInput.value='';updateAudioUI();
-  });own.append(personalTrackButton,importOther,fileInput,audioStatus);audioPanel.append(own);
   const toggles=makeElement('div','audio-switches');musicButton=makeElement('button','audio-switch'),effectsButton=makeElement('button','audio-switch');
   musicButton.addEventListener('click',()=>{sound.setMusic(!sound.musicEnabled);updateAudioUI();});
   effectsButton.addEventListener('click',()=>{sound.setEffects(!sound.effectsEnabled);updateAudioUI();sound.effect('notify');});
@@ -84,20 +76,13 @@
    row.append(name,input);audioPanel.append(row);
   }
   volume('VOLUME MUSIQUE',sound.musicVolume,v=>sound.setMusicVolume(v));volume('VOLUME EFFETS',sound.effectsVolume,v=>sound.setEffectsVolume(v));
-  audioPanel.append(makeElement('p','audio-copyright','Aucun morceau importé n’est transmis sur Internet. Les bandes-son intégrées sont des compositions originales.'));
+  audioPanel.append(makeElement('p','audio-copyright','Bandes-son et bruitages entièrement intégrés à l’application. Fonctionne sans Internet. Conseil : un casque révèle tous les détails des lieux.'));
   $('app').append(audioPanel);
-  if(typeof sound.restorePersonal==='function')sound.restorePersonal().then(name=>{
-   if(name)audioStatus.textContent='Fichier retrouvé : '+name;
-   else if(sound.track==='personal'){sound.choose('nocturne');audioStatus.textContent='Musique importée introuvable : la bande-son originale reprend.';}
-   updateAudioUI();
-  }).catch(()=>{});
   $('settingsToggle').setAttribute('aria-label','Ouvrir les réglages de la musique et des bruitages');
   updateAudioUI();
  }
  function updateAudioUI(){if(!audioPanel)return;
   audioButtons.forEach(({id,button})=>button.classList.toggle('selected',sound.track===id));
-  personalTrackButton.classList.toggle('selected',sound.track==='personal');
-  personalTrackButton.textContent=sound.imported?'♫  '+sound.importedName:'＋ IMPORTER MA MUSIQUE';
   musicButton.textContent='MUSIQUE : '+(sound.musicEnabled?'ACTIVÉE':'COUPÉE');
   effectsButton.textContent='BRUITAGES : '+(sound.effectsEnabled?'ACTIVÉS':'COUPÉS');
   $('settingsToggle').textContent=sound.musicEnabled?'♫':'♩̸';
@@ -107,17 +92,14 @@
   confirmPanel=makeElement('div','internal-confirm hidden');confirmPanel.setAttribute('role','alertdialog');confirmPanel.setAttribute('aria-modal','true');confirmPanel.setAttribute('aria-label','Recommencer le dossier');
   const paper=makeElement('div','confirm-paper');paper.append(makeElement('span','overline','DOSSIER 001 · DÉCISION'));
   paper.append(makeElement('h2','', 'Recommencer l’enquête ?'));
-  paper.append(makeElement('p','', 'Tes indices et tes interrogatoires seront effacés dans cette version. Les musiques et réglages audio resteront enregistrés.'));
+  paper.append(makeElement('p','', 'Tes indices et tes interrogatoires seront effacés dans cette version. Tes réglages sonores resteront enregistrés.'));
   const actions=makeElement('div','confirm-actions'),no=makeElement('button','confirm-cancel','GARDER MA PARTIE'),yes=makeElement('button','confirm-accept','RECOMMENCER');
   no.addEventListener('click',closePanel);yes.addEventListener('click',()=>{file=new CaseFile();persist();closePanel();showIntro();sound.effect('page');});
   actions.append(no,yes);paper.append(actions);confirmPanel.append(paper);$('app').append(confirmPanel);
  }
  function askReplay(){closePanel();panel='confirmation';confirmPanel.classList.remove('hidden');sound.effect('page');}
  function setupAtmosphere(){
-  const layer=makeElement('div','ambient-particles');layer.setAttribute('aria-hidden','true');
-  for(let i=0;i<16;i++){const mote=makeElement('span','ambient-mote');mote.style.left=(8+(i*37)%87)+'%';mote.style.top=(11+(i*29)%77)+'%';
-   mote.style.animationDelay=-(i*.7)+'s';mote.style.animationDuration=(4.2+i%5*1.25)+'s';layer.append(mote);}
-  $('world').append(layer);
+  if(window.PalimpsesteAtmosphere)atmosphere=window.PalimpsesteAtmosphere.mount($('world'));
  }
  function clueBurst(obj){const burst=makeElement('span','clue-burst','✦');burst.style.left=obj.x+'%';burst.style.top=obj.y+'%';$('world').append(burst);setTimeout(()=>burst.remove(),1550);}
  function openMemory(id){activeObject=OBJECTS.find(o=>o.id===id);if(!activeObject)return;frameIndex=0;

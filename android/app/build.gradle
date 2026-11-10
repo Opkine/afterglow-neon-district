@@ -10,8 +10,8 @@ android {
         applicationId 'com.layadam.palimpseste'
         minSdk 26
         targetSdk 36
-        versionCode 3
-        versionName '0.3.0'
+        versionCode 4
+        versionName '0.4.0'
         resourceConfigurations += ['fr']
         manifestPlaceholders = [appLabel: 'PALIMPSESTE']
     }
@@ -25,9 +25,9 @@ android {
         debug {
             // CI generates an ephemeral debug key: preserve the user's older previews.
             // Each preview is an isolated Android install until release signing is stable.
-            applicationIdSuffix '.preview03'
+            applicationIdSuffix '.preview04'
             versionNameSuffix '-preview'
-            manifestPlaceholders = [appLabel: 'PALIMPSESTE V0.3']
+            manifestPlaceholders = [appLabel: 'PALIMPSESTE V0.4']
         }
         release {
             minifyEnabled false

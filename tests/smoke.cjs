@@ -20,8 +20,8 @@ test('entire UI state machine: intro, scene, memory, clues, notebook, deduction,
  const js=fs.readFileSync(path.resolve(__dirname,'../game/main.js'),'utf8');vm.runInNewContext(js,globals);
  const app=win.__palimpsesteTest;assert.ok(app);assert.equal(map.get('intro').classList.contains('active-view'),true);
  app.start();assert.equal(map.get('world').classList.contains('active-view'),true);assert.equal(map.get('hotspots').children.length,4);
- app.openAudio();assert.equal(app.audio().choose('jazz'),true);assert.equal(app.audio().track,'jazz');
- assert.ok(store.get('palimpseste-audio-v3').includes('jazz'));app.audio().setEffects(false);
+ app.openAudio();assert.equal(app.audio().track,'nocturne');
+ app.audio().setMusicVolume(.44);assert.ok(store.get('palimpseste-audio-v4').includes('0.44'));app.audio().setEffects(false);
  assert.equal(app.audio().effectsEnabled,false);app.audio().setEffects(true);
  assert.equal(store.get('palimpseste-guide-seen'),'1');app.openHelp();
  app.openMemory('clock');assert.equal(map.get('memory').classList.contains('hidden'),false);
@@ -29,6 +29,7 @@ test('entire UI state machine: intro, scene, memory, clues, notebook, deduction,
  const slider=map.get('timeSlider');slider.listeners.input({target:{value:'2'}});
  assert.equal(map.get('recordBtn').disabled,false);assert.equal(map.get('memory').classList.contains('memory-found'),true);map.get('recordBtn').click();assert.equal(app.file().count,1);
  app.file().move('garden');app.renderScene();assert.equal(map.get('hotspots').children.length,4);
+ assert.equal(app.audio().track,'verriere');
  for(const o of Story.OBJECTS)app.file().collect(o.id,o.truth);
  assert.equal(app.file().canDeduce,true);app.openNotebook();assert.equal(map.get('notesList').children.length,12);
  app.openDialog('nina');assert.equal(map.get('questions').children.length,3);

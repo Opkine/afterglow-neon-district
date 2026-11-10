@@ -1,45 +1,39 @@
 const test=require('node:test'),a=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),p=require('node:path');
 const base=p.join(__dirname,'../game');
-function audioContext(){
- const saved=new Map(),clock={value:0,seq:0};
- class PersonalAudio{
-  constructor(src){this.src=src;this.loop=false;this.volume=0;this.started=false;}
+function context(){
+ const saved=new Map(),created=[];
+ class EmbeddedAudio{
+  constructor(src){this.src=src;this.loop=false;this.volume=0;this.started=false;created.push(this);}
   play(){this.started=true;return Promise.resolve();}
   pause(){this.started=false;}
  }
  const win={};
- const globals={
-  window:win,localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},
-  setInterval:()=>++clock.seq,clearInterval:()=>{},console,
-  Audio:PersonalAudio,URL:{createObjectURL:()=> 'blob:test-music',revokeObjectURL:()=>{}}
- };
- for(const script of ['sound.js','audioPlus.js'])vm.runInNewContext(fs.readFileSync(p.join(base,script),'utf8'),globals);
- return{Sound:win.PalimpsesteAudio,saved,clock};
+ const globals={window:win,localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},
+  setInterval:()=>1,clearInterval:()=>{},console,Audio:EmbeddedAudio};
+ for(const file of ['sound.js','audioPlus.js'])vm.runInNewContext(fs.readFileSync(p.join(base,file),'utf8'),globals);
+ return{Sound:win.PalimpsesteAudio,saved,created};
 }
-test('three contrasting original offline soundtracks can be switched and saved',()=>{
- const{Sound,saved}=audioContext(),music=new Sound();
+test('each place automatically gets its own full soundtrack with no manual music picker',()=>{
+ const{Sound,created,saved}=context(),sound=new Sound();
  a.deepEqual(Object.keys(Sound.tracks),['nocturne','jazz','verriere']);
- a.notDeepEqual(Sound.tracks.nocturne.melody,Sound.tracks.jazz.melody);
- a.equal(music.choose('jazz'),true);a.equal(music.track,'jazz');
- a.equal(music.choose('verriere'),true);a.equal(music.track,'verriere');
- a.equal(music.choose('invalid'),false);
- music.setMusicVolume(.36);music.setEffectsVolume(.83);music.setMusic(false);music.setEffects(true);
- const persisted=JSON.parse(saved.get('palimpseste-audio-v3'));a.equal(persisted.track,'verriere');a.equal(persisted.musicVolume,.36);
- a.equal(persisted.musicEnabled,false);a.equal(persisted.effectsEnabled,true);
- const restored=new Sound();a.equal(restored.track,'verriere');a.equal(restored.musicEnabled,false);
+ sound.ensure();a.equal(sound.active.src,'audio/nocturne.ogg');
+ a.equal(sound.setLocation('lobby'),true);a.equal(sound.active.src,'audio/jazz.ogg');
+ a.equal(sound.setLocation('lobby'),false);a.equal(created.filter(x=>x.src==='audio/jazz.ogg').length,1);
+ a.equal(sound.setLocation('garden'),true);a.equal(sound.active.src,'audio/verriere.ogg');
+ a.equal(sound.setLocation('not-a-place'),false);
+ sound.setMusicVolume(.36);sound.setEffectsVolume(.83);sound.setMusic(false);
+ const pref=JSON.parse(saved.get('palimpseste-audio-v4'));
+ a.equal(pref.musicVolume,.36);a.equal(pref.musicEnabled,false);
+ const restored=new Sound();a.equal(restored.musicVolume,.36);a.equal(restored.musicEnabled,false);
+ a.equal(typeof sound.importPersonal,'undefined');a.equal(typeof sound.choose,'undefined');
 });
-test('personal music is validated, plays locally and does not require network',async()=>{
- const{Sound}=audioContext(),music=new Sound();
- await a.rejects(()=>music.importPersonal({type:'application/pdf',name:'story.pdf',size:20}),/musique/i);
- await a.rejects(()=>music.importPersonal({type:'audio/mpeg',name:'huge.mp3',size:26*1024*1024}),/25 Mo/i);
- const result=await music.importPersonal({type:'audio/mpeg',name:'Ma valse.mp3',size:1024});
- a.equal(result.name,'Ma valse.mp3');a.equal(result.saved,false); // No IndexedDB in this strict test.
- a.equal(music.track,'personal');a.equal(music.imported.started,true);
- music.setMusic(false);a.equal(music.imported.started,false);
- a.equal(music.choose('nocturne'),true);
-});
-test('each of twelve clue objects has a dedicated acoustic gesture',()=>{
- const source=fs.readFileSync(p.join(base,'audioPlus.js'),'utf8');
+test('audio clues are spatialized object Foley, and effects can be silenced',()=>{
+ const{Sound,created}=context(),sound=new Sound();
  const{OBJECTS}=require('../game/story.js');
- for(const o of OBJECTS)a.ok(source.includes("case '"+o.id+"'"),'Missing sound for '+o.id);
+ const src=fs.readFileSync(p.join(base,'audioPlus.js'),'utf8');
+ for(const object of OBJECTS)a.ok(src.includes(object.id+':')||src.includes("key==='collect:'"),'Object mapping: '+object.id);
+ for(const object of OBJECTS)sound.effect('object:'+object.id);
+ a.equal(created.filter(x=>x.src.includes('/fx/')).length,12);
+ sound.setEffects(false);sound.effect('object:clock');
+ a.equal(created.filter(x=>x.src.includes('/fx/')).length,12);
 });

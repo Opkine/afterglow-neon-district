@@ -1,4 +1,4 @@
-/* PALIMPSESTE v0.3 — living scenery, original sound selection and diegetic UI */
+/* PALIMPSESTE v0.4 — spatial scores and pronounced illustrated animation */
 .audio-panel{z-index:14;padding-bottom:calc(42px + var(--safe-bottom));}
 .audio-panel h2.audio-heading{font-size:clamp(37px,9vw,54px);line-height:1.02;margin:28px 0 15px;}
 .audio-track-list{display:grid;gap:10px;margin:22px 0 15px;}
@@ -7,18 +7,12 @@
  width:100%;border:1px solid #bcaa8c;background:#f2e8d5;color:#4d3d2f;border-radius:5px;
  padding:15px;box-shadow:0 3px 0 #71583e1c;transition:background .2s,transform .2s,border-color .2s;
 }
-.audio-track:active{transform:translateY(2px);}
+.audio-track{cursor:default;}
 .audio-track.selected{border:2px solid #6d8965;background:#e3ebd5;box-shadow:0 0 16px #7796634f;}
 .audio-track strong{font:600 19px/1.25 Georgia,serif;grid-column:2;}
 .audio-track small{font:500 12px/1.5 system-ui,sans-serif;color:#796753;grid-column:2;}
 .audio-marker{grid-column:1;grid-row:1 / span 2;border-radius:50%;width:37px;height:37px;background:#8b7157;color:#fff4d7;display:grid;place-items:center;font-size:22px;}
 .audio-track.selected .audio-marker{background:#507249;}
-.import-block{padding:14px;border:1px dashed #9c8262;background:#efe0c8;margin:19px 0;}
-.audio-personal{font:750 12px system-ui,sans-serif;display:block;padding:13px;background:#71513c;color:#fff5dc;}
-.audio-personal.selected{background:#517749;color:#fffae6;}
-.audio-file-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
-.import-another{width:100%;padding:10px;margin-top:10px;border:1px solid #bca38a;color:#654f3b;background:#fff8e9;font:700 10px system-ui,sans-serif;letter-spacing:.6px;}
-.audio-status{font-size:12px;line-height:1.5;margin:13px 0 0;color:#675140;overflow-wrap:anywhere;}
 .audio-switches{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:17px 0;}
 .audio-switch{padding:13px 8px;border:1px solid #937b5d;background:#eee1c8;color:#493627;font:750 11px system-ui,sans-serif;min-height:53px;}
 .audio-volume{display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;margin:19px 0;color:#4c3829;}
@@ -53,6 +47,14 @@
 .world[data-scene="room"]:before{background:radial-gradient(ellipse at 72% 24%,#fff0c14b,transparent 48%);}
 .world[data-scene="lobby"]:before{background:radial-gradient(ellipse at 28% 49%,#ffbb6b55,transparent 43%),radial-gradient(ellipse at 82% 27%,#ffb97039,transparent 36%);}
 .world[data-scene="garden"]:before{background:radial-gradient(ellipse at 48% 16%,#b8f1ba4d,transparent 44%),radial-gradient(ellipse at 72% 69%,#ffde9b35,transparent 37%);}
+.scene-atmosphere{position:absolute;inset:0;display:block;width:100%;height:100%;z-index:1;pointer-events:none;mix-blend-mode:screen;opacity:1;}
+.world[data-scene="room"] .dust{animation:roomShadow 8s ease-in-out infinite alternate;background:linear-gradient(108deg,#110a0436,transparent 45%,#ffd69b22 74%,transparent),radial-gradient(circle at 82% 34%,#ffdc9770,transparent 43%);}
+.world[data-scene="lobby"] .dust{animation:lobbyShadows 11s ease-in-out infinite alternate;background:radial-gradient(ellipse at 30% 28%,#ffd08f67,transparent 33%),radial-gradient(ellipse at 75% 63%,#fae69d3e,transparent 27%);}
+.world[data-scene="garden"] .dust{animation:gardenBreathe 7s ease-in-out infinite alternate;background:radial-gradient(circle at 32% 38%,#adf2b365,transparent 29%),radial-gradient(circle at 70% 68%,#f6e0a653,transparent 41%);}
+.world.active-view .place-card{animation:placeReveal .85s cubic-bezier(.18,.87,.3,1.05) both;}
+.world .hotspot:not(.found){animation:markerBreath 2.3s ease-in-out infinite,artifactFloat 3.5s ease-in-out infinite alternate;}
+.world[data-scene="garden"] .hotspot:not(.found){box-shadow:0 0 0 8px #e5f3af4d,0 0 37px #eefa84b9,inset 0 0 18px #eff8ac;}
+.world[data-scene="lobby"] .hotspot:not(.found){box-shadow:0 0 0 8px #ffdf9e48,0 0 39px #ffc77fc9,inset 0 0 19px #fdf0b6;}
 .ambient-particles{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
 .ambient-mote{position:absolute;display:block;border-radius:50%;height:3px;width:3px;box-shadow:0 0 8px 3px #fae1a877;background:#fff5d4;
  opacity:.47;animation:floatMote 5s ease-in-out infinite alternate;}
@@ -70,6 +72,11 @@
 .ending-paper #endingText{animation-delay:.22s;}
 .ending .paper-footer{margin-top:34px;padding-bottom:18px;line-height:1.5;}
 @keyframes sceneEnter{from{opacity:.48;filter:sepia(.55) brightness(.6);}to{opacity:1;filter:sepia(0) brightness(1);}}
+@keyframes roomShadow{0%{opacity:.65;transform:translateX(-3%);}100%{opacity:1;transform:translateX(5%);}}
+@keyframes lobbyShadows{0%{opacity:.6;transform:translate(4%,-1%) scale(1.04);}100%{opacity:1;transform:translate(-3%,2%) scale(1.06);}}
+@keyframes gardenBreathe{0%{opacity:.62;transform:scale(1.05) translateY(1%);}100%{opacity:1;transform:scale(1.11) translateY(-1%);}}
+@keyframes placeReveal{0%{opacity:0;transform:translateY(-21px);filter:blur(6px);}100%{opacity:1;transform:translateY(0);filter:blur(0);}}
+@keyframes artifactFloat{0%{transform:translate(-50%,-55%);}100%{transform:translate(-50%,-47%);}}
 @keyframes lanternBreath{0%{opacity:.45;transform:translateX(-2%);}100%{opacity:1;transform:translateX(2%);}}
 @keyframes floatMote{0%{transform:translate3d(-5px,9px,0) scale(.65);opacity:.15;}100%{transform:translate3d(13px,-22px,0) scale(1.3);opacity:.72;}}
 @keyframes clueShimmer{0%{opacity:0;transform:translate(-50%,-50%) scale(.15) rotate(-30deg);}35%{opacity:1;transform:translate(-50%,-50%) scale(1.5) rotate(8deg);}100%{opacity:0;transform:translate(-50%,-150%) scale(.75);}}
@@ -81,6 +88,6 @@
 @keyframes veilAppear{from{opacity:0;}to{opacity:1;}}
 @keyframes paperDialog{from{transform:translateY(20px) scale(.97);opacity:0;}to{transform:translateY(0) scale(1);opacity:1;}}
 @media (prefers-reduced-motion:reduce){
- .world:before,.ambient-mote,.memory-sheet:not(.hidden) #objectCrop,.memory-static,.witness-medallion,
+ .world:before,.ambient-mote,.dust,.place-card,.hotspot,.memory-sheet:not(.hidden) #objectCrop,.memory-static,.witness-medallion,
  .answer-box:not(.hidden),.ending-paper h2,.ending-paper #endingLead,.ending-paper #endingText,.ending-paper #endingStats{animation:none!important;}
 }

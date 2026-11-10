@@ -65,6 +65,23 @@ class Score:
             envelope = np.minimum(1,t/.58)*np.minimum(1,(samples/RATE-t)/.65)
             signal = sum(np.sin(2*np.pi*f*n*t*vibrato)/(n*n) for n in range(1,6))
             signal *= envelope * .55
+        elif instrument == "pluck":
+            # A stiff-string pluck with decaying harmonics and a wooden attack.
+            env=np.minimum(1,t/.004)*np.exp(-t*4.5/max(.44,length*self.beat))
+            signal=(.56*np.sin(2*np.pi*f*t)+.26*np.sin(2*np.pi*f*2.005*t)
+                +.15*np.sin(2*np.pi*f*3.012*t)+.08*np.sin(2*np.pi*f*4.017*t))
+            signal=signal*env
+        elif instrument == "brass":
+            # Rounded reed/brass vibrato with non-trivial harmonic shape.
+            vibrato=.006*np.sin(2*np.pi*5.1*t)*np.minimum(1,t/.32)
+            phase=2*np.pi*f*(t+.009*np.cumsum(vibrato)/RATE)
+            env=np.minimum(1,t/.095)*np.minimum(1,(samples/RATE-t)/.13)
+            signal=(np.sin(phase)*.63+np.sin(phase*2)*.25+np.sin(phase*3)*.12)*env
+        elif instrument == "organ":
+            env=np.minimum(1,t/.048)*np.minimum(1,(samples/RATE-t)/.17)
+            trem=.81+.19*np.sin(2*np.pi*4.3*t)
+            signal=(np.sin(2*np.pi*f*t)*.69+np.sin(2*np.pi*f*2*t)*.17
+               +np.sin(2*np.pi*f*4*t)*.08)*env*trem
         else:
             raise ValueError(instrument)
         signal = np.asarray(signal * velocity, dtype=np.float32)
@@ -83,6 +100,29 @@ class Score:
         shaped=noise*np.exp(-t*22)*strength
         self.left[begin:begin+samples]+=shaped*.9
         self.right[begin:begin+samples]+=shaped*.95
+
+    def percussion(self, beat:float, kind:str, power=.035):
+        begin=int(beat*self.beat*RATE)
+        duration={'kick':.32,'snare':.22,'hat':.105,'tambourine':.19}[kind]
+        n=min(int(duration*RATE),len(self.left)-begin)
+        if n<=0:return
+        t=np.arange(n,dtype=np.float32)/RATE
+        if kind=='kick':
+            phase=2*np.pi*(82*t-28*t*t)
+            signal=np.sin(phase)*np.exp(-t*19)*power*2.4
+        elif kind=='snare':
+            noise=RNG.standard_normal(n).astype(np.float32)
+            signal=(noise*.6+np.sin(2*np.pi*178*t)*.19)*np.exp(-t*23)*power
+        elif kind=='tambourine':
+            noise=RNG.standard_normal(n).astype(np.float32)
+            signal=noise*np.exp(-t*20)*(1+.7*np.sin(2*np.pi*23*t))*power*.47
+        else:
+            noise=RNG.standard_normal(n).astype(np.float32)
+            # Opposing short delays soften the white-noise attack.
+            noise[8:]-=noise[:-8]*.73
+            signal=noise*np.exp(-t*39)*power*.30
+        self.left[begin:begin+n]+=signal*.86
+        self.right[begin:begin+n]+=signal*.94
 
     def room(self, kind: str):
         n=len(self.left)
