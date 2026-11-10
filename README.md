@@ -21,9 +21,17 @@ Une expérience entièrement distincte des projets AFTERGLOW et ASTRA TIDE, avec
 - Ambiance acoustique originale procédurale hors ligne, vibrations et sauvegarde locale.
 - Fonctionnement Android immersif autonome, sans connexion, compte, publicité, achat ni suivi.
 
-## Mise à jour Android v0.2.0
+## Mise à jour Android v0.3.0
 
-L'APK de test est signé automatiquement sur GitHub Actions avec une clé de débogage éphémère. **Pour ne pas risquer de perdre les sauvegardes de la v0.1.0, la v0.2.0 s'installe à côté de l'ancienne application** sous le nom « PALIMPSESTE AIDE » (package indépendant `com.layadam.palimpseste.preview02`). La progression commence donc à zéro dans cette nouvelle version ; ne désinstallez pas l'ancienne tant que vous souhaitez conserver sa sauvegarde. Une clé de signature durable sera nécessaire avant la publication et pour les vraies mises à jour. Les aides fonctionnent sans Internet.
+- Trois véritables morceaux instrumentaux originaux en Ogg Vorbis (environ 37, 40 et 43 secondes), sélectionnables : **Nocturne à l'hôtel**, **Le hall après minuit** (jazz feutré) et **Sous la verrière** (boîte à musique). Les arrangements sont reproductibles avec `tools/generate_music.py` (numpy, ffmpeg) et libres de dépendances musicales tierces.
+- Possibilité d'importer une musique de son téléphone (MP3, M4A, OGG, WAV ; 25 Mo maximum) et de l'enregistrer dans l'espace local de l'application avec IndexedDB lorsque le stockage le permet. La musique n'est pas envoyée sur Internet.
+- Réglages distincts du volume de la musique et des bruitages ; interrupteurs indépendants pour les désactiver.
+- Douze identités sonores différentes pour les objets inspectés : mécanique, papier, clochette, serrure, télégramme, pluie, etc.
+- Décors animés discrètement (flammes lumineuses, poussières, lucioles, transitions de scènes), portraits et souvenirs vivants, révélations mises en scène ; réduction des animations respectée.
+- Notifications contextuelles dans le jeu et **confirmation personnalisée** pour recommencer, sans fenêtre système de navigateur.
+- Écran final défilant avec illustration de fond maintenue sur toute sa hauteur.
+
+L'APK de test est signé automatiquement sur GitHub Actions avec une clé de débogage éphémère. **Pour ne pas risquer de perdre les sauvegardes des v0.1 et v0.2, la v0.3 s'installe à côté des anciennes applications** sous le nom « PALIMPSESTE V0.3 » (package `com.layadam.palimpseste.preview03`). La progression commence donc à zéro dans cette préversion ; ne désinstallez pas les précédentes si vous voulez conserver leurs sauvegardes. Une clé de signature durable sera nécessaire avant la publication et pour les vraies mises à jour. Les aides et musiques intégrées fonctionnent sans Internet.
 
 ## Construire et tester
 
