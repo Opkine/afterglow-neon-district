@@ -20,11 +20,11 @@ La base jouable comprend :
 - Interface tactile portrait, règles, options d'accessibilité et réinitialisation.
 - Projet Android natif embarquant l'intégralité du jeu dans une WebView locale.
 
-La **version Android de développement** est préparée pour compilation par
-GitHub Actions. Ce dépôt ne constitue pas à lui seul une publication Google Play.
-La compilation APK, l'installation sur appareils physiques, la signature de
-production, la qualité graphique finale et l'équilibrage doivent être validés
-avant d'annoncer une version commerciale terminée.
+La **version Android de développement** a été compilée avec succès par GitHub
+Actions le 10 novembre 2026 (workflow #2) et l'APK a été téléchargée et inspectée.
+Ce dépôt ne constitue pas à lui seul une publication Google Play. L'installation
+sur appareils physiques, la signature de production, la qualité graphique finale
+et l'équilibrage doivent être validés avant de parler de version commerciale terminée.
 
 ## Jouer en local
 

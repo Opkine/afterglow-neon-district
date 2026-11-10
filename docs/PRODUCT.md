@@ -37,7 +37,7 @@ connues et d'une mise en scène particulière, pas une invention garantie inédi
 - [x] Base de jeu et rendu natif Android conçu pour la lecture hors ligne.
 - [x] Gestion des 80 niveaux, défis, progression, effets et paramètres.
 - [x] Tests unitaires déterministes du moteur (80 niveaux / 560 coups).
-- [ ] APK Android compilée par GitHub Actions, artefact téléchargé et vérifié.
+- [x] APK Android compilée par GitHub Actions, artefact téléchargé et contenu ZIP vérifié.
 - [ ] Installation/désinstallation/mise à jour sur un Samsung Galaxy récent.
 - [ ] Contrôle du plein écran immersif et des gestes système sur Android 16.
 - [ ] Revue graphique réelle sur téléphones 720p, 1080p, 1440p.
