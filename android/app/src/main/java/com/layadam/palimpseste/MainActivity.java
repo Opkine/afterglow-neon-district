@@ -1,4 +1,4 @@
-package com.layadam.afterglow;
+package com.layadam.palimpseste;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -33,7 +33,7 @@ public class MainActivity extends Activity {
                 .build();
 
         gameView = new WebView(this);
-        gameView.setBackgroundColor(0xff080b20);
+        gameView.setBackgroundColor(0xff30241c);
         gameView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         gameView.setVerticalScrollBarEnabled(false);
         gameView.setHorizontalScrollBarEnabled(false);
@@ -80,7 +80,7 @@ public class MainActivity extends Activity {
 
     @Override public void onBackPressed() {
         if (gameView != null) gameView.evaluateJavascript(
-                "window.afterglowBack && window.afterglowBack()", null);
+                "window.palimpsesteBack && window.palimpsesteBack()", null);
         else super.onBackPressed();
     }
 

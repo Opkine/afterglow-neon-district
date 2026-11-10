@@ -1,60 +1,20 @@
 <!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#060b1e">
-  <meta name="description" content="AFTERGLOW — Réveille une cité néon à coups de réactions en chaîne.">
-  <title>AFTERGLOW • Neon District</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <main class="shell" id="app">
-    <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
-    <header class="topbar">
-      <div class="brand"><span class="brand-mark">✦</span><div><strong>AFTER<span>GLOW</span></strong><small>NEON DISTRICT</small></div></div>
-      <div class="top-currency" title="Éclats gagnés"><span class="coin">✦</span><b id="coins">0</b></div>
-    </header>
-    <section class="city-panel" aria-label="Aperçu de la cité">
-      <canvas id="city" width="720" height="310" aria-label="Ville de nuit qui s'illumine en progressant"></canvas>
-      <div class="city-hud"><span id="district-label">DISTRICT 01 · LES TOITS</span><span id="power-label">0% ÉCLAIRÉ</span></div>
-      <div class="city-banner" id="city-banner"><span class="pulse-dot"></span> LA VILLE ATTEND TON ÉTINCELLE</div>
-    </section>
-    <section class="mission" id="mission">
-      <div class="level-line"><div><span class="eyebrow" id="mode-label">CAMPAGNE</span><h1 id="level-title">NIVEAU 01</h1></div><div class="mission-metrics"><div class="timer-pill" title="Temps écoulé"><span>◷</span><b id="timer-label">00:00</b></div><div class="level-pill"><span id="moves-label">24</span><small>COUPS</small></div></div></div>
-      <div class="goals" id="goals" aria-label="Objectifs du niveau"></div>
-      <div class="progress-track"><div id="score-bar"></div></div>
-    </section>
-    <section class="gameplay" id="gameplay">
-      <div class="board-frame"><canvas id="board" width="600" height="700" aria-label="Grille de puzzle tactile, relier au moins trois cristaux identiques"></canvas></div>
-      <div class="powerbar" aria-label="Pouvoirs utilisables">
-        <button class="power-slot assist" id="ask-hint" title="Afficher un chemin possible"><span class="power-icon">⌁</span><small>INDICE</small></button>
-        <button class="power-slot" data-power="bomb" title="Bombe 3×3"><span class="power-icon">✹</span><small>×<b id="count-bomb">1</b></small></button>
-        <button class="power-slot" data-power="row" title="Laser horizontal"><span class="power-icon">⇆</span><small>×<b id="count-row">1</b></small></button>
-        <button class="power-slot" data-power="column" title="Laser vertical"><span class="power-icon">↕</span><small>×<b id="count-column">1</b></small></button>
-        <button class="power-slot" data-power="color" title="Prisme chromatique"><span class="power-icon">✧</span><small>×<b id="count-color">0</b></small></button>
-      </div>
-      <div class="charge-strip"><span>ÉNERGIE NÉON</span><div class="charge-track"><div id="charge-fill"></div></div><span>100% = BONUS</span></div>
-      <div class="game-caption"><span id="hint-text">Glisse sur 3 cristaux identiques ou plus</span><span id="combo-text">COMBO x1</span></div>
-    </section>
-    <section class="secondary hidden" id="secondary"></section>
-    <nav class="nav" aria-label="Navigation principale">
-      <button class="nav-btn active" data-view="play"><span>◈</span><small>JOUER</small></button>
-      <button class="nav-btn" data-view="city"><span>▥</span><small>VILLE</small></button>
-      <button class="nav-btn" data-view="daily"><span>◎</span><small>DÉFI</small></button>
-      <button class="nav-btn" data-view="shop"><span>◉</span><small>BOUTIQUE</small></button>
-      <button class="nav-btn" data-view="settings"><span>⚙</span><small>OPTIONS</small></button>
-    </nav>
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <div class="veil hidden" id="modal-veil"><section class="modal" id="modal" role="dialog" aria-modal="true" aria-live="polite"></section></div>
-  </main>
-  <script src="vendor/howler.core.min.js" defer></script>
-  <script src="vendor/confetti.browser.min.js" defer></script>
-  <script src="vendor/tween.umd.js" defer></script>
-  <script src="soundtrack.js" defer></script>
-  <script src="visuals.js" defer></script>
-  <script src="cityscape.js" defer></script>
-  <script src="skills.js" defer></script>
-  <script src="main.js" defer></script>
-</body>
-</html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#54372d"><meta name="mobile-web-app-capable" content="yes"><title>PALIMPSESTE — Les Objets Mentent</title><link rel="stylesheet" href="style.css"></head>
+<body><div id="app" class="app">
+  <section id="intro" class="intro active-view" aria-labelledby="introTitle"><div class="intro-backdrop"></div><div class="intro-front"><div class="imprint">◈ &nbsp; LAYADAM CORP. PRÉSENTE</div><div class="thin-rule"></div><h1 id="introTitle">PALIMPSESTE</h1><p class="serif-tagline">Les objets mentent. Les souvenirs aussi.</p><div class="case-number">DOSSIER N° 001 &nbsp; / &nbsp; HÔTEL DES ÉCUMES</div><div class="intro-body"><h2>LA DISPARUE<br>DE LA CHAMBRE 307</h2><p>À 21 h 13, Mara Varela disparaît. Sa chambre est intacte. Les témoins se contredisent. Mais certains objets se souviennent de ce que personne ne veut raconter.</p></div><button id="begin" class="ink-button">OUVRIR LE DOSSIER <span>⟶</span></button><div class="intro-bottom">Une enquête interactive · Hors connexion · Casques recommandés</div></div></section>
+
+  <section id="world" class="world" aria-label="Scène d'enquête interactive"><img id="sceneImage" src="assets/room.webp" alt="Chambre d'hôtel peinte, objets à examiner"><div class="dust" aria-hidden="true"></div><header class="world-header"><button id="homeMenu" class="header-action" aria-label="Retour au dossier">☰</button><div class="chapter-mark"><strong>PALIMPSESTE</strong><small>CHAMBRE 307 · ENQUÊTE 01</small></div><button id="settingsToggle" class="header-action sound-action" aria-label="Activer ou couper le son">♫</button></header><div class="place-card"><div class="place-number">LIEU <span id="placeNum">01</span> / 03</div><h2 id="placeName">CHAMBRE 307</h2><p id="placeHint">Une chambre trop bien rangée pour un départ précipité.</p></div><div id="hotspots" class="hotspots"></div><div class="world-footer"><div class="footer-top"><span id="sceneProgress">00 / 12 INDICES</span><span id="memoryPulse">◷ TRACE TEMPORELLE ACTIVE</span></div><div class="toolbar"><button data-open="map" id="mapButton"><span class="toolbar-glyph">⌂</span><span>LES LIEUX</span></button><button data-open="notebook" id="notebookButton"><span class="toolbar-glyph">▤</span><span>MON CARNET</span></button><button data-open="dialogue" id="peopleButton"><span class="toolbar-glyph">♟</span><span>TÉMOINS</span></button></div></div></section>
+
+  <div id="shade" class="shade hidden" role="presentation"></div>
+  <section id="memory" class="sheet memory-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="objectTitle"><div class="sheet-handle"></div><div class="sheet-top"><div><span class="overline">◷ RÉMANENCE D'UN OBJET</span><h2 id="objectTitle">L’horloge arrêtée</h2><p id="objectMaterial">Horlogerie</p></div><button class="close-sheet" data-close aria-label="Fermer">×</button></div><div class="memory-art"><div id="objectCrop"></div><div class="memory-static"></div><span id="timeStamp">20 h 15</span><span class="reel-mark">◁ &nbsp; ◁ &nbsp; ◁</span></div><div class="filmstrip"><span>20:15</span><span>20:45</span><span>21:13</span><span>22:10</span></div><input id="timeSlider" type="range" min="0" max="3" step="1" value="0" aria-label="Revenir dans le passé de cet objet"><p class="scrub-hint">FAIS GLISSER LE TEMPS POUR RETROUVER LA TRACE</p><div class="memory-words"><span class="quote-glyph">“</span><p id="memoryText"></p></div><button id="recordBtn" class="ink-button muted" disabled>CONTINUER L'EXPLORATION</button><div id="memorySaved" class="stamp hidden">✦ PREUVE CONSIGNÉE</div></section>
+
+  <section id="map" class="paper-panel hidden" role="dialog" aria-modal="true" aria-labelledby="mapTitle"><div class="panel-head"><span class="overline">CARTOGRAPHIE DE L'ENQUÊTE</span><button class="close-sheet" data-close aria-label="Fermer">×</button></div><h2 id="mapTitle">Trois lieux.<br>Une seule vérité.</h2><p class="panel-copy">Chaque pièce conserve un fragment différent de la soirée. Choisis un lieu pour l’explorer librement.</p><div id="mapLocations" class="location-list"></div><div class="paper-footer">HÔTEL DES ÉCUMES · 1927</div></section>
+
+  <section id="notebook" class="paper-panel hidden" role="dialog" aria-modal="true" aria-labelledby="notesTitle"><div class="panel-head"><span class="overline">CARNET DE L’ENQUÊTEUR</span><button class="close-sheet" data-close aria-label="Fermer">×</button></div><h2 id="notesTitle">Ce que les objets<br>ont laissé derrière eux.</h2><div class="notes-progress"><div id="notesMeter"></div></div><p class="panel-copy" id="notesSubtitle">Les témoignages changent. Les traces demeurent.</p><div id="notesList" class="notes-list"></div><button id="solveBtn" class="ink-button" disabled>RECONSTITUER LES FAITS <span>⟶</span></button></section>
+
+  <section id="dialogue" class="paper-panel hidden" role="dialog" aria-modal="true" aria-labelledby="dialogueTitle"><div class="panel-head"><span class="overline">LES VOIX DU PASSÉ</span><button class="close-sheet" data-close aria-label="Fermer">×</button></div><h2 id="dialogueTitle">Les témoins ne<br>disent pas tout.</h2><div class="witness-tabs"><button id="ninaTab" data-person="nina">NINA VARELA</button><button id="louisTab" data-person="louis">LOUIS MERCIER</button></div><div class="witness-body"><img class="witness-medallion" id="personPortrait" src="assets/nina.webp" alt="Portrait peint de Nina Varela"><div><span class="overline" id="personRole">SŒUR DE MARA</span><h3 id="personName">Nina Varela</h3><p id="personLine">« Je ne vous demande pas de me croire. »</p></div></div><div id="questions" class="questions"></div><div id="answer" class="answer-box hidden"></div></section>
+
+  <section id="verdict" class="paper-panel hidden" role="dialog" aria-modal="true" aria-labelledby="verdictTitle"><div class="panel-head"><span class="overline">RECONSTRUCTION DES FAITS</span><button class="close-sheet" data-close aria-label="Fermer">×</button></div><h2 id="verdictTitle">À toi de<br>dire la vérité.</h2><p class="panel-copy">Trois déductions. Chaque réponse doit être appuyée par les preuves que tu as récoltées.</p><label class="deduction"><span>01 — QUI A ORGANISÉ LA DISPARITION ?</span><select id="who"><option value="">Choisis une hypothèse…</option><option value="nina">Nina, sa sœur</option><option value="mara">Mara elle-même</option><option value="louis">Louis, le concierge</option></select></label><label class="deduction"><span>02 — DANS QUEL BUT ?</span><select id="why"><option value="">Choisis un mobile…</option><option value="garden">Empêcher la destruction du jardin</option><option value="escape">Fuir à l’étranger</option><option value="inheritance">Détourner un héritage</option></select></label><label class="deduction"><span>03 — QUELLE PREUVE DÉCISIVE ?</span><select id="proof"><option value="">Choisis une preuve…</option><option value="clock">L’horloge arrêtée</option><option value="register">Le registre des arrivées</option><option value="letter">La lettre dans la verrière</option></select></label><div class="moral-choice"><div class="overline">LA VÉRITÉ T’APPARTIENT. QU’EN FAIS-TU ?</div><label><input type="radio" name="choice" value="protect" checked><span>Garder son secret pour sauver la verrière.</span></label><label><input type="radio" name="choice" value="reveal"><span>Révéler les faits, quelles qu’en soient les conséquences.</span></label></div><p id="deductionError" class="deduction-error" role="status"></p><button id="submitVerdict" class="ink-button">SCELLER MON RAPPORT <span>⟶</span></button></section>
+
+  <section id="ending" class="ending hidden"><div class="ending-art"></div><div class="ending-paper"><span class="overline">DOSSIER 001 · CLASSÉ</span><h2 id="endingTitle">LA VÉRITÉ A UN PRIX</h2><p id="endingLead"></p><div class="ending-rule">❧</div><p id="endingText"></p><div id="endingStats" class="ending-stats"></div><button id="replay" class="ink-button">REVIVRE CETTE ENQUÊTE <span>↺</span></button><p class="paper-footer">À SUIVRE : LE SECRET DE LA JETÉE</p></div></section>
+</div><script src="story.js"></script><script src="sound.js"></script><script src="main.js"></script></body></html>

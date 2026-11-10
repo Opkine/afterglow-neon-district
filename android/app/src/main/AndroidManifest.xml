@@ -4,7 +4,7 @@
         android:label="${appLabel}"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:theme="@style/Theme.Afterglow"
+        android:theme="@style/Theme.Palimpseste"
         android:allowBackup="true"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"

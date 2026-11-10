@@ -1,15 +1,14 @@
-name: Android APK
+name: PALIMPSESTE — Android case preview
 
 on:
   push:
-    branches: [main]
-  pull_request:
+    branches: [palimpseste]
   workflow_dispatch:
 
 jobs:
-  android:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
@@ -24,26 +23,23 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
-      - name: Installer le SDK Android 36
+      - name: Install SDK Android 36
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
-      - name: Intégrer les ressources de jeu dans l'APK
+      - name: Test investigation logic and offline package
+        run: node --test tests/*.cjs
+      - name: Embed original game
         run: |
           mkdir -p android/app/src/main/assets/game
           cp -R game/. android/app/src/main/assets/game/
-      - name: Tests de logique déterministes
-        run: |
-          node tests/engine.cjs
-          node tests/skills.cjs
-          node tests/assets.cjs
-      - name: Compiler APK installable de test
+      - name: Compile native Android package
         run: gradle -p android --no-daemon :app:assembleDebug
-      - name: Vérifier la signature et le contenu APK
+      - name: Verify signed APK and integrity
         run: |
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs android/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
           unzip -t android/app/build/outputs/apk/debug/app-debug.apk >/dev/null
       - uses: actions/upload-artifact@v4
         with:
-          name: AFTERGLOW-v1.3-Android-debug-APK
+          name: PALIMPSESTE-0.1-Android-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
           retention-days: 30
+          if-no-files-found: error
