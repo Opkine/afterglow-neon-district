@@ -29,9 +29,11 @@ jobs:
       - name: Intégrer les ressources de jeu dans l'APK
         run: |
           mkdir -p android/app/src/main/assets/game
-          cp game/index.html game/style.css game/main.js android/app/src/main/assets/game/
+          cp -R game/. android/app/src/main/assets/game/
       - name: Tests de logique déterministes
-        run: node tests/engine.cjs
+        run: |
+          node tests/engine.cjs
+          node tests/assets.cjs
       - name: Compiler APK installable de test
         run: gradle -p android --no-daemon :app:assembleDebug
       - name: Vérifier la signature et le contenu APK
@@ -40,7 +42,7 @@ jobs:
           unzip -t android/app/build/outputs/apk/debug/app-debug.apk >/dev/null
       - uses: actions/upload-artifact@v4
         with:
-          name: AFTERGLOW-v1-Android-debug-APK
+          name: AFTERGLOW-v1.1-Android-debug-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30

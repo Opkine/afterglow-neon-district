@@ -31,3 +31,126 @@ button{font:inherit;cursor:pointer;touch-action:manipulation}
 @media(max-height:730px){.shell{padding-top:8px}.topbar{height:46px}.city-panel{height:120px}.mission{padding:9px 5px}.level-line h1{font-size:16px;margin-bottom:4px}.board-frame{width:min(100%,calc((100dvh - 363px)*.86),390px)}.nav{min-height:53px;padding-top:5px}.nav-btn{min-height:45px}.nav-btn span{font-size:20px}.game-caption{font-size:9px}}
 @media(min-width:700px){.shell{min-height:850px;max-height:1000px;margin:20px;border:1px solid #3a4578;border-radius:26px}.city-panel{height:190px}.board-frame{width:430px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* AFTERGLOW 1.1 — premium neon-noir art direction. All treatments are local. */
+@font-face{font-family:'Inter';src:url('fonts/InterVariable.woff2') format('woff2');font-style:normal;font-weight:100 900;font-display:swap}
+:root{--panel:#131e3e;--line:#48628e;--muted:#b5bfdb;--text:#fcfeff}
+html,body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+html,body{background:#050915}
+.shell{
+  background:
+    radial-gradient(ellipse 86% 40% at 70% -10%,#3158a14f,transparent 73%),
+    radial-gradient(ellipse 70% 30% at -8% 76%,#85396929,transparent 75%),
+    radial-gradient(ellipse 95% 40% at 110% 65%,#07577e40,transparent 75%),
+    linear-gradient(167deg,#111d3c 0%,#0b122c 45%,#050b1c 100%);
+  box-shadow:0 12px 75px #000b;
+}
+.shell:before{
+  content:"";position:absolute;z-index:-1;pointer-events:none;inset:0;
+  opacity:.13;
+  background-image:repeating-linear-gradient(0deg,transparent 0,transparent 23px,#799acc33 24px),
+    repeating-linear-gradient(90deg,transparent 0,transparent 23px,#799acc30 24px);
+  mask-image:linear-gradient(to bottom,transparent 2%,#000 45%,transparent 90%);
+}
+.ambient{opacity:.27;filter:blur(75px)}
+.topbar{height:58px;padding:1px 5px 12px}
+.brand{gap:11px}
+.brand-mark{font-size:35px;transform:rotate(-12deg);animation:logo-breathe 3.4s ease-in-out infinite;color:#8beaff;filter:drop-shadow(0 0 12px #27dffd)}
+@keyframes logo-breathe{50%{filter:drop-shadow(0 0 19px #7dfbff) brightness(1.24);transform:rotate(12deg) scale(1.12)}}
+.brand strong{font-size:21px;letter-spacing:2.2px;text-shadow:0 2px 12px #000b}
+.brand small{font-size:8px;letter-spacing:4.6px;color:#b4cdfa}
+.top-currency{
+  border-color:#5773a6;background:linear-gradient(145deg,#24365bdf,#0b142acb);
+  box-shadow:inset 0 1px 0 #ffffff24,0 3px 14px #0008;
+  min-width:77px;height:38px;font-weight:900;
+}
+.coin{filter:drop-shadow(0 0 6px #ffc950);animation:coin-shine 4.8s infinite}
+@keyframes coin-shine{50%{filter:drop-shadow(0 0 13px #ffd97d)}}
+.city-panel{
+  border-color:#6686b898;
+  box-shadow:inset 0 0 25px #0007,0 15px 26px #02040fc9,0 0 32px #286cd02b;
+}
+.city-panel:before{
+  content:"";position:absolute;z-index:2;inset:0;pointer-events:none;
+  background:linear-gradient(125deg,#ffffff16 0,transparent 18%,transparent 83%,#6eaffb0d 100%);
+  border-radius:inherit;
+}
+.city-hud{z-index:3;top:11px;left:13px;right:13px;color:#eff6ff;letter-spacing:1.15px;text-shadow:0 2px 7px #010410,0 0 10px #000}
+.city-hud span:last-child{color:#93ffd4}
+.city-banner{
+  z-index:3;bottom:11px;background:linear-gradient(125deg,#142440e9,#0a1425e8);
+  border-color:#6d9ec1aa;box-shadow:0 7px 18px #0009,inset 0 1px 1px #ffffff20;
+  padding:8px 17px;font-size:10px;letter-spacing:1.4px;
+}
+.mission{padding-top:17px}
+.level-line h1{font-size:21px;letter-spacing:1.5px;text-shadow:0 4px 14px #000}
+.eyebrow{font-size:10px;letter-spacing:2.4px;color:#68ebff;text-shadow:0 0 12px #0dd5fa55}
+.level-pill{border-color:#7694c1;background:linear-gradient(148deg,#344672,#172447);box-shadow:inset 0 1px 1px #d3e4ff33,0 6px 20px #070c2599}
+.level-pill span{color:#ffe39a;text-shadow:0 0 11px #e9b83d8a}
+.goals{gap:9px}
+.goal{
+  background:linear-gradient(120deg,#223354,#111b38);border-color:#536e9a;
+  box-shadow:inset 0 1px 1px #ffffff1a,0 5px 16px #0508197a;
+  border-radius:13px;min-width:105px;padding:8px 10px;
+}
+.goal-dot{border:2px solid #e9ffffa6;transform:rotate(45deg);box-shadow:0 0 15px currentColor,inset 1px 1px 5px #fff8}
+.progress-track{height:5px;background:#08142e;border:1px solid #243e65;box-shadow:inset 0 1px 6px #000a}
+.progress-track>div{height:100%;background:linear-gradient(90deg,#5deaff,#af88fa,#ff79c1);box-shadow:0 0 18px #6edbf6;transition:width .35s cubic-bezier(.2,.75,.3,1)}
+.board-frame{
+  padding:8px;border-radius:24px;
+  background:linear-gradient(145deg,#4f75a8 0%,#172b57 14%,#0d1838 78%,#5470a1 100%);
+  border:1px solid #8fb6eb9c;
+  box-shadow:0 20px 33px #000a,0 0 32px #257db231,inset 0 2px 2px #d1e7ff33,inset 0 -4px 10px #040b26;
+}
+.board-frame:before{
+  inset:3px;border-radius:20px;
+  background:linear-gradient(135deg,#ddf0ff32,transparent 14%,transparent 84%,#6a7fba25);
+}
+.board-frame:after{
+  content:"";pointer-events:none;position:absolute;inset:0;border-radius:24px;
+  background:linear-gradient(110deg,transparent 0%,#9af6ff13 44%,transparent 48%);
+}
+#board{border-radius:16px;background:#0b1531;filter:contrast(1.03) saturate(1.13)}
+.game-caption{padding:8px 5px 2px;font-size:11px;line-height:1.25;color:#becde5}
+.game-caption #combo-text{color:#ffe19a;letter-spacing:1.1px;text-shadow:0 0 10px #f0ac5288}
+.nav{gap:5px;padding-top:11px;min-height:69px}
+.nav:before{background:linear-gradient(90deg,transparent,#709ac4aa,transparent)}
+.nav-btn{position:relative;overflow:hidden;min-height:55px;transition:background .2s,color .2s,transform .2s}
+.nav-btn span{filter:drop-shadow(0 0 4px #2f72a255)}
+.nav-btn.active{
+  background:linear-gradient(160deg,#1d4f67cc,#102944d9);color:#78f5ff;
+  text-shadow:0 0 12px #44e6ff9e;
+  box-shadow:inset 0 1px 0 #c5f9ff20,0 0 16px #289bc01a;
+}
+.nav-btn.active:after{content:"";position:absolute;top:0;left:20%;right:20%;height:2px;border-radius:2px;background:#5af3ff;box-shadow:0 0 10px #6af8ff}
+.nav-btn:active{transform:scale(.95)}
+.secondary{padding-top:15px}
+.secondary h2{font-size:27px;letter-spacing:.3px;text-shadow:0 3px 15px #0007}
+.secondary .lead{font-size:13px;line-height:1.65}
+.section-card{
+  background:linear-gradient(135deg,#1f2f54,#121c36 57%,#111b35);border-color:#51688f;
+  box-shadow:0 15px 25px #02081866,inset 0 1px 0 #f0f6ff14;
+  border-radius:20px;padding:19px;margin:13px 0;
+}
+.section-card h3{font-size:18px}
+.section-card p{font-size:13px}
+.district{
+  background:radial-gradient(circle at 105% -5%,#1e63863b,transparent 65%),linear-gradient(148deg,#1a2d51,#0e1a34);
+  border-color:#536992;border-radius:17px;min-height:109px;
+  box-shadow:inset 0 1px 0 #ffffff1a,0 6px 16px #01051766;
+}
+.district:not(.locked){border-color:#53a9c1a8;box-shadow:inset 0 1px 0 #ffffff25,0 4px 20px #2ab2cc16}
+.district .number{font-size:10px;letter-spacing:1.35px}
+.district .symbol{text-shadow:0 0 18px #ffdb89}
+.district.locked{opacity:.62;filter:saturate(.56)}
+.theme-choice{background:linear-gradient(150deg,#283454,#121c3d);border-color:#667ba8;border-radius:15px;padding:14px 5px}
+.theme-choice .swatch{width:31px;height:31px;box-shadow:0 0 17px currentColor,inset 0 2px 7px #ffffffaa}
+.theme-choice.active{background:linear-gradient(160deg,#245578,#142c45);box-shadow:inset 0 1px 0 #d4fcff42,0 0 18px #41e7ff1b}
+.action{background:linear-gradient(130deg,#a0f7ff,#48c9fc 52%,#8b99fd);box-shadow:inset 0 2px 1px #ffffff91,0 7px 25px #1b8cd755;border-radius:14px;text-shadow:0 1px 0 #ffffff7a;transition:filter .2s,transform .2s}
+.action:active{transform:scale(.975);filter:brightness(.93)}
+.action.alt{text-shadow:none;background:linear-gradient(140deg,#32446c,#1c2a4b)}
+.toggle{box-shadow:inset 0 1px 0 #ffffff18;min-width:66px}
+.modal{background:radial-gradient(ellipse at 50% -10%,#32538c 0,transparent 68%),linear-gradient(160deg,#1c2c53,#0c152b);border-color:#7fa5c4;box-shadow:0 25px 85px #000e,0 0 58px #2786ce44}
+.modal .hero-symbol{animation:modal-pulse 2.5s ease-in-out infinite}
+@keyframes modal-pulse{50%{transform:scale(1.12);filter:drop-shadow(0 0 25px #47dfff)}}
+@media(max-height:730px){.topbar{height:46px}.mission{padding-top:9px}.board-frame{padding:5px;border-radius:19px}.nav{min-height:53px}}

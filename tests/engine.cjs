@@ -6,7 +6,7 @@ const assert=require('node:assert/strict');
 const stored=new Map();
 const noop=()=>{};
 const gradient=()=>({addColorStop:noop});
-const ctx=()=>new Proxy({createLinearGradient:gradient}, {get:(obj,prop)=>obj[prop]??noop,set:(obj,prop,value)=>{obj[prop]=value;return true;}});
+const ctx=()=>new Proxy({createLinearGradient:gradient,createRadialGradient:gradient}, {get:(obj,prop)=>obj[prop]??noop,set:(obj,prop,value)=>{obj[prop]=value;return true;}});
 class Element {
   constructor(id=''){this.id=id;this.dataset={};this.value='';this.style={};this.classList={add:noop,remove:noop,toggle:noop,contains:()=>false};this.innerHTML='';this.textContent='';this.events={};}
   getContext(){return ctx();}
@@ -20,13 +20,14 @@ const elements=new Map();const el=id=>{if(!elements.has(id))elements.set(id,new 
 const nav=['play','city','daily','settings'].map(v=>{const e=new Element();e.dataset.view=v;return e;});
 let testApi;
 const browser={
-  document:{hidden:false,documentElement:{style:{setProperty:noop}},getElementById:el,querySelectorAll:(s)=>s==='[data-view]'?nav:[],addEventListener:noop},
+  document:{hidden:false,documentElement:{style:{setProperty:noop}},getElementById:el,createElement:()=>new Element(),querySelectorAll:(s)=>s==='[data-view]'?nav:[],addEventListener:noop},
   localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)},
   navigator:{vibrate:noop},location:{search:'?test=1'},URLSearchParams,
   window:{},requestAnimationFrame:noop,clearTimeout:noop,setTimeout:noop,
   performance:{now:()=>2000},Date,Math,Number,Array,Object,String,JSON,Uint8Array,console
 };
 vm.createContext(browser);
+vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/visuals.js'),'utf8'),browser,{timeout:1500});
 vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/main.js'),'utf8'),browser,{timeout:1500});
 testApi=browser.window.__afterglowTest;
 assert(testApi,'A test interface must exist');

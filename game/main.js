@@ -1,4 +1,4 @@
-/* AFTERGLOW / Neon District — 100% offline, sans bibliothèque externe.
+/* AFTERGLOW / Neon District — moteur hors-ligne, assets open source crédités.
    Copyright (c) 2026 LayAdam corp. Tous droits réservés. */
 (() => {
   'use strict';
@@ -15,7 +15,7 @@
   const dom = { city: $('city'), board: $('board'), coins: $('coins'), goals: $('goals'), moves: $('moves-label'), title: $('level-title'), mode: $('mode-label'), progress: $('score-bar'), district: $('district-label'), power: $('power-label'), banner: $('city-banner'), combo: $('combo-text'), hint: $('hint-text'), secondary: $('secondary'), gameplay: $('gameplay'), mission: $('mission'), veil: $('modal-veil'), modal: $('modal'), toast: $('toast') };
   const bctx = dom.board.getContext('2d'), cctx = dom.city.getContext('2d');
   const STORAGE = 'afterglow.neondistrict.save.v1';
-  const fresh = () => ({version:1, level:1, coins:0, stars:{}, finished:0, theme:0, owned:[0], sound:true, haptics:true, reduceMotion:false, daily:{}, achievements:{}, game:null});
+  const fresh = () => ({version:1, level:1, coins:0, stars:{}, finished:0, theme:0, owned:[0], sound:true, music:true, haptics:true, reduceMotion:false, daily:{}, achievements:{}, game:null});
   let data = fresh();
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE));
@@ -26,7 +26,7 @@
     }
   } catch (_) { /* Un stockage endommagé ne doit jamais bloquer le démarrage. */ }
   let game = null, view = 'play', selection = [], pointerId = null, modalOpen = false;
-  let fx = [], popups = [], cityFlash = 0, now = 0, audio = null, toastTimer = 0;
+  let fx = [], popups = [], shockwaves = [], falls = [], cityFlash = 0, now = 0, lastDropAt = -1000, toastTimer = 0;
   const safeInteger = n => Number.isFinite(n) && Number.isInteger(n);
   const save = () => { try { data.game = game; localStorage.setItem(STORAGE, JSON.stringify(data)); } catch (_) { notify('Sauvegarde indisponible sur cet appareil'); } };
   const rand = () => {
@@ -79,7 +79,7 @@
     const seed = hash(daily ? `DAILY-${dateKey()}-2026` : `CAMPAIGN-${num}-NEON`);
     game = {mode, level:daily?0:Math.min(num,MAX_LEVEL), seedState:seed, tiles:[], targets:[], required:daily?15:Math.min(10+Math.floor((num-1)/5)*2,23), collected:[0,0,0,0,0], moves:daily?24:26+Math.floor((num-1)/15), initialMoves:daily?24:26+Math.floor((num-1)/15), score:0, combo:1, lastTurn:0, chains:0, bestChain:0};
     const a=randomInt(TYPES), b=(a+1+randomInt(TYPES-1))%TYPES;
-    game.targets=[a,b];game.tiles=makeTiles();selection=[];
+    game.targets=[a,b];game.tiles=makeTiles();selection=[];falls=[];lastDropAt=-1000;
     applyTheme();updateUI();save();
     showView('play');
   }
@@ -93,6 +93,7 @@
     const t=THEMES[data.theme]||THEMES[0];
     document.documentElement.style.setProperty('--cyan',t.color);
     document.documentElement.style.setProperty('--bg',t.bg);
+    window.AfterglowAudio?.setOptions({sound:data.sound,music:data.music});
   }
   function updateUI() {
     if (!game)return;
@@ -111,29 +112,19 @@
     dom.power.textContent=`${Math.round(data.finished/MAX_LEVEL*100)}% ÉCLAIRÉ`;
     dom.banner.innerHTML=data.finished===0?'<span class="pulse-dot"></span> LA VILLE ATTEND TON ÉTINCELLE':`<span class="pulse-dot"></span> ${data.finished} SECTEURS RÉACTIVÉS`;
   }
-  function sound(freq=470,duration=.08,type='sine',volume=.045) {
-    if(!data.sound)return;
-    try {
-      audio ||= new (window.AudioContext||window.webkitAudioContext)();
-      if(audio.state==='suspended')audio.resume();
-      const o=audio.createOscillator(),g=audio.createGain();o.type=type;
-      o.frequency.setValueAtTime(freq,audio.currentTime);o.frequency.exponentialRampToValueAtTime(Math.max(70,freq*.75),audio.currentTime+duration);
-      g.gain.setValueAtTime(volume,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+duration);
-      o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+duration+.01);
-    }catch(_){ /* Audio optionnel */ }
-  }
+  function sfx(name, rate=1) {if(data.sound)window.AfterglowAudio?.play(name,rate);}
   function vibrate(ms=15) {if(data.haptics && navigator.vibrate)navigator.vibrate(ms);}
   function notify(msg) {dom.toast.textContent=msg;dom.toast.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>dom.toast.classList.remove('visible'),2200);}
   function openModal(html) {modalOpen=true;dom.modal.innerHTML=html;dom.veil.classList.remove('hidden');}
   function closeModal() {modalOpen=false;dom.veil.classList.add('hidden');}
-  function showWelcome(){openModal(`<div class="hero-symbol">✦</div><span class="kicker">BIENVENUE À AFTERGLOW</span><h2>RÉVEILLE LA VILLE.</h2><p>Une cité entière s'est éteinte. Fais jaillir des réactions en chaîne pour rallumer ses quartiers.</p><ul><li>Glisse d'un cristal à un voisin <b>de la même couleur</b>.</li><li>Relie au moins <b>3 cristaux</b> pour les collecter.</li><li>Remplis les <b>deux objectifs colorés</b> avant la fin des coups.</li><li>Une chaîne de <b>6+</b> déclenche une onde explosive !</li></ul><div class="actions"><button class="action" id="begin">JE RALLUME LA VILLE</button></div><p class="fineprint">Hors ligne • Pas de compte • Pas de limite d'énergie</p>`);$('begin').onclick=()=>{data.achievements.tutorial=true;save();closeModal();sound(640);};}
+  function showWelcome(){openModal(`<div class="hero-symbol">✦</div><span class="kicker">BIENVENUE À AFTERGLOW</span><h2>RÉVEILLE LA VILLE.</h2><p>Une cité entière s'est éteinte. Fais jaillir des réactions en chaîne pour rallumer ses quartiers.</p><ul><li>Glisse d'un cristal à un voisin <b>de la même couleur</b>.</li><li>Relie au moins <b>3 cristaux</b> pour les collecter.</li><li>Remplis les <b>deux objectifs colorés</b> avant la fin des coups.</li><li>Une chaîne de <b>6+</b> déclenche une onde explosive !</li></ul><div class="actions"><button class="action" id="begin">JE RALLUME LA VILLE</button></div><p class="fineprint">Hors ligne • Pas de compte • Pas de limite d'énergie</p>`);$('begin').onclick=()=>{data.achievements.tutorial=true;save();closeModal();sfx('win');};}
   function drawRound(ctx,x,y,w,h,r,color){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=color;ctx.fill();}
   function pickAt(e){const rect=dom.board.getBoundingClientRect(), x=(e.clientX-rect.left)/rect.width*600,y=(e.clientY-rect.top)/rect.height*700;const col=Math.floor((x-10)/(580/C)),row=Math.floor((y-10)/(680/R));return col>=0&&col<C&&row>=0&&row<R?gridIndex(col,row):-1;}
-  function pointerDown(e){if(view!=='play'||modalOpen||game.moves<=0)return;const i=pickAt(e);if(i<0)return;pointerId=e.pointerId;selection=[i];dom.board.setPointerCapture?.(e.pointerId);e.preventDefault();sound(330,.035,'sine',.012);}
+  function pointerDown(e){if(view!=='play'||modalOpen||!game||game.moves<=0||now-lastDropAt<350)return;const i=pickAt(e);if(i<0)return;pointerId=e.pointerId;selection=[i];dom.board.setPointerCapture?.(e.pointerId);e.preventDefault();sfx('touch',.85);}
   function pointerMove(e){if(pointerId!==e.pointerId||!selection.length||modalOpen)return;const i=pickAt(e);if(i<0||i===selection.at(-1))return;
     if(selection.length>1&&i===selection.at(-2)){selection.pop();return;}
     if(selection.includes(i)||!adjacent(i,selection.at(-1))||game.tiles[i]!==game.tiles[selection[0]])return;
-    selection.push(i);if(selection.length%3===0){sound(380+selection.length*55,.04,'sine',.016);vibrate(8);} e.preventDefault();
+    selection.push(i);if(selection.length%2===0){sfx('link',Math.min(1.5,.92+selection.length*.055));vibrate(8);} e.preventDefault();
   }
   function pointerUp(e){if(pointerId!==e.pointerId)return;pointerId=null;const path=selection.slice();selection=[];if(path.length>=3)playPath(path);else if(path.length)notify('Relie 3 cristaux identiques au minimum');}
   dom.board.addEventListener('pointerdown',pointerDown);
@@ -153,15 +144,24 @@
     game.score+=removed.size*15*game.combo+(bonus?300:0);
     game.chains++;game.bestChain=Math.max(game.bestChain,path.length);game.moves--;
     game.tiles=[...game.tiles];for(const i of removed)game.tiles[i]=-1;
-    // Chute de chaque colonne, puis création déterministe de nouveaux cristaux.
+    // Gravity is visually animated using per-tile source positions.
+    const moved=Array(C*R).fill(null);
     for(let x=0;x<C;x++) {
-      const items=[];for(let y=R-1;y>=0;y--)if(game.tiles[gridIndex(x,y)]>=0)items.push(game.tiles[gridIndex(x,y)]);
-      for(let y=R-1;y>=0;y--)game.tiles[gridIndex(x,y)]=R-1-y<items.length?items[R-1-y]:randomInt(TYPES);
+      const items=[];for(let y=R-1;y>=0;y--)if(game.tiles[gridIndex(x,y)]>=0)items.push({kind:game.tiles[gridIndex(x,y)],source:y});
+      let newCount=0;
+      for(let y=R-1;y>=0;y--){
+        const obj=items[R-1-y],newGem=!obj;
+        game.tiles[gridIndex(x,y)]=newGem?randomInt(TYPES):obj.kind;
+        if(!obj||obj.source!==y) moved[gridIndex(x,y)]={from:newGem?-1-newCount++:obj.source,delay:newGem?newCount*19:0};
+      }
     }
     if(!hasMove(game.tiles))game.tiles=makeTiles();
+    falls=moved;lastDropAt=age;
+    shockwaves.push({x:10+(coords(path.at(-1)).x+.5)*580/C,y:10+(coords(path.at(-1)).y+.5)*680/R,start:age,color:COLORS[col],power:bonus?1.7:1});
     cityFlash=bonus?1:.52;
-    if(path.length>=6) {data.achievements.bigChain=true;popup(`${path.length} EN CHAÎNE !`,300,350,COLORS[col]);sound(880,.18,'triangle',.08);vibrate(45);}
-    else {popup(`+${removed.size*15*game.combo}`,300,380,COLORS[col]);sound(480+path.length*70,.1,'sine',.045);vibrate(18);}
+    if(path.length>=9) {data.achievements.bigChain=true;popup(`SUPER NOVA ×${path.length}`,300,350,COLORS[col]);sfx('epic',1.1);vibrate(65);}
+    else if(path.length>=6) {data.achievements.bigChain=true;popup(`${path.length} EN CHAÎNE !`,300,350,COLORS[col]);sfx('burst');vibrate(45);}
+    else {popup(`+${removed.size*15*game.combo}`,300,380,COLORS[col]);sfx('collect',.85+path.length*.035);vibrate(18);}
     if(game.combo>=4)data.achievements.combo=true;
     updateUI();save();
     if(game.targets.every(c=>game.collected[c]>=game.required))setTimeout(winGame,480);
@@ -188,14 +188,18 @@
     openModal(`<div class="hero-symbol">${finalLevel?'✺':'✦'}</div><span class="kicker">${finalLevel?'CAMPAGNE TERMINÉE':'SECTEUR RÉACTIVÉ'}</span><h2>${first?'LA VILLE REPREND VIE !':credited>0?'NOUVEAU RECORD !':'BRAVO, ENCORE !'}</h2><div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="score">${credited.toLocaleString('fr-FR')} <small style="font-size:17px;color:var(--gold)">✦</small></div><p>${first?'Un nouveau bâtiment s’illumine dans ta ville.':credited>0?'Tu as amélioré la maîtrise de ce secteur.':'Un secteur maîtrisé, tu peux retenter un meilleur score.'}</p><div class="rowstats"><div><b>${stars}/3</b><small>ÉTOILES</small></div><div><b>${data.finished}</b><small>SECTEURS</small></div></div><div class="actions"><button class="action" id="next">${finalLevel?'REJOUER':'NIVEAU SUIVANT'}</button><button class="action alt" id="viewcity">ADMIRER LA VILLE</button></div>`);
     $('next').onclick=()=>{closeModal();newGame('level',Math.min(data.level,MAX_LEVEL));};
     $('viewcity').onclick=()=>{closeModal();newGame('level',Math.min(data.level,MAX_LEVEL));showView('city');};
-    for(let i=0;i<4;i++)setTimeout(()=>sound(650+i*140,.14,'triangle',.055),i*130);
+    sfx('win');
+    if(!data.reduceMotion && window.confetti){
+      const palette=['#52e6ff','#ff6abf','#ffd36d','#72f5a9','#b6a0ff'];
+      window.confetti({particleCount:105,spread:87,startVelocity:42,gravity:.85,scalar:.84,colors:palette,origin:{y:.46},disableForReducedMotion:true});
+    }
   }
   function updateCityOnly(){dom.coins.textContent=data.coins.toLocaleString('fr-FR');dom.power.textContent=`${Math.round(data.finished/MAX_LEVEL*100)}% ÉCLAIRÉ`;dom.banner.innerHTML=`<span class="pulse-dot"></span> ${data.finished} SECTEURS RÉACTIVÉS`;}
   function loseGame(){if(modalOpen||!game)return;const kind=game.mode,level=game.level;
     openModal(`<div class="hero-symbol">◉</div><span class="kicker">PLUS D'ÉNERGIE</span><h2>PRESQUE !</h2><p>La ville est encore plongée dans la nuit. Tes objectifs étaient tout proches. Tu peux réessayer sans pénalité.</p><div class="rowstats"><div><b>${game.score.toLocaleString('fr-FR')}</b><small>POINTS</small></div><div><b>${game.bestChain}</b><small>MAX CHAÎNE</small></div></div><div class="actions"><button class="action" id="retry">RÉESSAYER</button><button class="action alt" id="exit">RETOUR À LA VILLE</button></div>`);
     $('retry').onclick=()=>{closeModal();newGame(kind,level);};
     $('exit').onclick=()=>{closeModal();newGame('level',Math.min(data.level,MAX_LEVEL));showView('city');};
-    sound(200,.28,'triangle',.045);
+    sfx('fail');
   }
   function showView(next){view=next;dom.secondary.classList.toggle('hidden',next==='play');dom.mission.classList.toggle('hidden',next!=='play');dom.gameplay.classList.toggle('hidden',next!=='play');
     document.querySelectorAll('.nav-btn').forEach(b=>{b.classList.toggle('active',b.dataset.view===next);b.setAttribute('aria-current',b.dataset.view===next?'page':'false');});
@@ -216,8 +220,8 @@
     else notify(msg);
   }
   function settingButton(name,desc,prop){return `<div class="setting-row"><div><b>${name}</b><small>${desc}</small></div><button class="toggle ${data[prop]?'on':''}" data-setting="${prop}" aria-pressed="${data[prop]}">${data[prop]?'ACTIF':'OFF'}</button></div>`;}
-  function renderSettingsView(){dom.secondary.innerHTML=`<span class="eyebrow">TON EXPÉRIENCE</span><h2>PERSONNALISER</h2><div class="section-card"><h3>Ambiance</h3>${settingButton('Effets sonores','Sons synthétiques intégrés','sound')}${settingButton('Vibrations','Retour tactile Android','haptics')}${settingButton('Animations réduites','Confort visuel','reduceMotion')}</div><div class="section-card"><h3>Apparence du jeu</h3><p>Débloque des ambiances en jouant, sans achat réel.</p><div class="theme-grid">${THEMES.map((t,i)=>`<button class="theme-choice ${data.theme===i?'active':''}" data-theme="${i}"><span class="swatch" style="background:${t.color};color:${t.color}"></span>${t.name}<small>${data.owned.includes(i)?data.theme===i?'ÉQUIPÉ':'ACQUIS':`${t.price} ✦`}</small></button>`).join('')}</div></div><div class="section-card"><h3>À propos</h3><p>AFTERGLOW — Neon District · v1.0.0</p><p>© 2026 LayAdam corp. Jeu autonome sans suivi publicitaire ni compte utilisateur. Sauvegarde locale automatique à chaque coup.</p><button class="action alt" id="rules">REVOIR LES RÈGLES</button></div><div class="section-card"><h3>Progression</h3><p>Les données sont conservées exclusivement sur cet appareil. Attention : effacer le stockage de l'application peut supprimer ta progression.</p><button class="action alt" id="reset">EFFACER MA PARTIE</button></div>`;
-    dom.secondary.querySelectorAll('[data-setting]').forEach(b=>b.onclick=()=>{data[b.dataset.setting]=!data[b.dataset.setting];save();renderSettingsView();});
+  function renderSettingsView(){dom.secondary.innerHTML=`<span class="eyebrow">TON EXPÉRIENCE</span><h2>PERSONNALISER</h2><div class="section-card"><h3>Ambiance cinématique</h3>${settingButton('Musique originale','Electro-ambient adaptative en boucle','music')}${settingButton('Effets sonores HD','Échantillons Kenney CC0, mixés avec Howler.js','sound')}${settingButton('Vibrations','Retour tactile Android','haptics')}${settingButton('Animations réduites','Confort visuel et économie d’énergie','reduceMotion')}</div><div class="section-card"><h3>Apparence du jeu</h3><p>Débloque des ambiances en jouant, sans achat réel.</p><div class="theme-grid">${THEMES.map((t,i)=>`<button class="theme-choice ${data.theme===i?'active':''}" data-theme="${i}"><span class="swatch" style="background:${t.color};color:${t.color}"></span>${t.name}<small>${data.owned.includes(i)?data.theme===i?'ÉQUIPÉ':'ACQUIS':`${t.price} ✦`}</small></button>`).join('')}</div></div><div class="section-card"><h3>À propos</h3><p>AFTERGLOW — Neon District · v1.1.0</p><p>© 2026 LayAdam corp. Jeu hors ligne sans publicité ni compte utilisateur. Sauvegarde locale à chaque coup. Ressources ouvertes et licences dans THIRD_PARTY.md.</p><button class="action alt" id="rules">REVOIR LES RÈGLES</button></div><div class="section-card"><h3>Progression</h3><p>Les données sont conservées exclusivement sur cet appareil. Attention : effacer le stockage de l'application peut supprimer ta progression.</p><button class="action alt" id="reset">EFFACER MA PARTIE</button></div>`;
+    dom.secondary.querySelectorAll('[data-setting]').forEach(b=>b.onclick=()=>{data[b.dataset.setting]=!data[b.dataset.setting];window.AfterglowAudio?.setOptions({sound:data.sound,music:data.music});save();renderSettingsView();sfx('menu');});
     dom.secondary.querySelectorAll('[data-theme]').forEach(b=>b.onclick=()=>selectTheme(Number(b.dataset.theme)));
     $('rules').onclick=showWelcome;
     $('reset').onclick=()=>openModal(`<div class="hero-symbol">⚠</div><h2>REPARTIR DE ZÉRO ?</h2><p>Cette opération supprimera définitivement tes niveaux, étoiles, défis et éclats sur cet appareil.</p><div class="actions"><button class="action alt" id="cancelReset">ANNULER</button><button class="action gold" id="confirmReset">TOUT EFFACER</button></div>`);
@@ -227,42 +231,41 @@
   }
   function selectTheme(i){const t=THEMES[i];if(!t)return;
     if(!data.owned.includes(i)){if(data.coins<t.price){notify(`Il manque ${t.price-data.coins} éclats`);return;}data.coins-=t.price;data.owned.push(i);}
-    data.theme=i;applyTheme();save();updateCityOnly();renderSettingsView();sound(740,.13,'sine',.06);
+    data.theme=i;applyTheme();save();updateCityOnly();renderSettingsView();sfx('purchase');
   }
-  for(const b of document.querySelectorAll('[data-view]'))b.onclick=()=>{if(!modalOpen){sound(410,.05);showView(b.dataset.view);}};
+  for(const b of document.querySelectorAll('[data-view]'))b.onclick=()=>{if(!modalOpen){sfx('menu');showView(b.dataset.view);}};
   window.afterglowBack=()=>{if(modalOpen)closeModal();else if(view!=='play')showView('play');else openModal(`<div class="hero-symbol">◈</div><h2>UNE PAUSE ?</h2><p>Ta partie est sauvegardée automatiquement. Tu peux reprendre plus tard, exactement au même endroit.</p><div class="actions"><button class="action" id="resume">REPRENDRE</button><button class="action alt" id="goCity">VOIR MA VILLE</button></div>`),$('resume').onclick=closeModal,$('goCity').onclick=()=>{closeModal();showView('city');};};
   document.addEventListener('keydown',e=>{if(e.key==='Escape'||e.key==='Backspace'){e.preventDefault();window.afterglowBack();}});
 
-  function drawGem(i,x,y,w,h,t){const color=COLORS[game.tiles[i]];if(game.tiles[i]===undefined)return;
-    const selected=selection.includes(i),puls=selected?(Math.sin(t*.012)*.035):0;
-    const pad=selected?2:7,px=x+pad,py=y+pad,pw=w-pad*2,ph=h-pad*2;
-    bctx.save();bctx.shadowColor=color;bctx.shadowBlur=selected?34:10;bctx.shadowOffsetY=selected?0:4;
-    const grad=bctx.createLinearGradient(px,py,px+pw,py+ph);grad.addColorStop(0,color);grad.addColorStop(.55,color);grad.addColorStop(1,'#353456');
-    drawRound(bctx,px,py,pw,ph,Math.min(20,w*.2),grad);bctx.shadowBlur=0;
-    drawRound(bctx,px+5,py+4,pw-10,ph*.32,9,'#ffffff32');
-    bctx.strokeStyle=selected?'#ffffffdd':'#ffffff55';bctx.lineWidth=selected?4:1.6;bctx.beginPath();bctx.roundRect(px+1,py+1,pw-2,ph-2,Math.min(20,w*.2));bctx.stroke();
-    // Une petite rune donne à chaque couleur une silhouette distincte.
-    bctx.translate(px+pw/2,py+ph/2);bctx.rotate((game.tiles[i]-2)*.14+puls);bctx.strokeStyle='#ffffffba';bctx.lineWidth=3;bctx.beginPath();
-    const r=Math.min(pw,ph)*.18;
-    if(game.tiles[i]===0){bctx.arc(0,0,r,0,Math.PI*2);}else if(game.tiles[i]===1){bctx.moveTo(0,-r);bctx.lineTo(r,r);bctx.lineTo(-r,r);bctx.closePath();}else if(game.tiles[i]===2){bctx.rect(-r,-r,r*2,r*2);}else if(game.tiles[i]===3){bctx.moveTo(-r,0);bctx.lineTo(0,-r);bctx.lineTo(r,0);bctx.lineTo(0,r);bctx.closePath();}else{for(let s=0;s<10;s++){const a=s*Math.PI/5-Math.PI/2,rad=s%2?r*.5:r;bctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad);}bctx.closePath();}
-    bctx.stroke();bctx.restore();
+  function drawGem(i,x,y,w,h,t){
+    if(game.tiles[i]===undefined)return;
+    const falling=falls[i],age=t-lastDropAt;
+    if(falling && age<380){
+      const p=clamp((age-falling.delay)/280,0,1);
+      y+=(falling.from-Math.floor(i/C))*h*(1-window.AfterglowArt.ease(p));
+    }
+    window.AfterglowArt.crystal(bctx,game.tiles[i],x,y,w,h,t,selection.includes(i));
   }
   function drawBoard(t){if(!game||view!=='play')return;const W=600,H=700,w=580/C,h=680/R;
     bctx.clearRect(0,0,W,H);
-    const grad=bctx.createLinearGradient(0,0,W,H);grad.addColorStop(0,'#1b2450');grad.addColorStop(1,'#10162f');drawRound(bctx,0,0,W,H,18,grad);
-    bctx.strokeStyle='#7c8ca012';bctx.lineWidth=1;
+    const grad=bctx.createLinearGradient(0,0,W,H);grad.addColorStop(0,'#243663');grad.addColorStop(.43,'#131d3c');grad.addColorStop(1,'#080f2a');drawRound(bctx,0,0,W,H,18,grad);
+    bctx.save();bctx.globalAlpha=.17;bctx.strokeStyle='#639bd7';bctx.lineWidth=1;
+    for(let z=0;z<28;z++){const xx=(z*103)%W,yy=(z*199)%H;bctx.beginPath();bctx.arc(xx,yy,9+(z%5)*18,0,Math.PI*2);bctx.stroke();}bctx.restore();
     for(let y=0;y<R;y++)for(let x=0;x<C;x++){
-      const px=10+x*w,py=10+y*h;drawRound(bctx,px+3,py+3,w-6,h-6,20,'#0a1130');
-      drawGem(gridIndex(x,y),px,py,w,h,t);
+      const px=10+x*w,py=10+y*h;drawRound(bctx,px+1,py+1,w-2,h-2,18,'#09102b9a');
+      bctx.strokeStyle='#8db6ee12';bctx.lineWidth=1;bctx.beginPath();bctx.roundRect(px+2,py+2,w-4,h-4,18);bctx.stroke();
     }
     if(selection.length>1){bctx.beginPath();const a=coords(selection[0]);bctx.moveTo(10+(a.x+.5)*w,10+(a.y+.5)*h);for(let i=1;i<selection.length;i++){const p=coords(selection[i]);bctx.lineTo(10+(p.x+.5)*w,10+(p.y+.5)*h);}
-      bctx.lineJoin='round';bctx.lineCap='round';bctx.strokeStyle='#fff6';bctx.lineWidth=16;bctx.stroke();bctx.strokeStyle='#ffffff';bctx.lineWidth=5;bctx.stroke();
+      bctx.lineJoin='round';bctx.lineCap='round';bctx.shadowColor=COLORS[game.tiles[selection[0]]];bctx.shadowBlur=32;bctx.strokeStyle=COLORS[game.tiles[selection[0]]];bctx.lineWidth=23;bctx.globalAlpha=.52;bctx.stroke();bctx.globalAlpha=1;bctx.shadowBlur=0;bctx.strokeStyle='#fff';bctx.lineWidth=6;bctx.stroke();
     }
+    for(let y=0;y<R;y++)for(let x=0;x<C;x++)drawGem(gridIndex(x,y),10+x*w,10+y*h,w,h,t);
+    shockwaves=shockwaves.filter(s=>t-s.start<640);
+    for(const s of shockwaves){const p=clamp((t-s.start)/640,0,1);bctx.globalAlpha=(1-p)*.7;bctx.strokeStyle=s.color;bctx.shadowColor=s.color;bctx.shadowBlur=22;bctx.lineWidth=5*(1-p)+1;bctx.beginPath();bctx.arc(s.x,s.y,(16+p*210)*s.power,0,Math.PI*2);bctx.stroke();}bctx.globalAlpha=1;bctx.shadowBlur=0;
     fx=fx.filter(p=>p.life>0);for(const p of fx){p.x+=p.vx;p.y+=p.vy;p.vy+=.14;p.life-=1;bctx.globalAlpha=clamp(p.life/45,0,1);bctx.fillStyle=COLORS[p.type];bctx.shadowColor=COLORS[p.type];bctx.shadowBlur=13;bctx.beginPath();bctx.arc(p.x,p.y,clamp(p.life/12,1,4.5),0,Math.PI*2);bctx.fill();}bctx.globalAlpha=1;bctx.shadowBlur=0;
     popups=popups.filter(p=>p.life>0);for(const p of popups){p.life-=1;p.y-=1.4;bctx.globalAlpha=clamp(p.life/28,0,1);bctx.fillStyle=p.color;bctx.font='900 31px system-ui';bctx.textAlign='center';bctx.shadowColor=p.color;bctx.shadowBlur=15;bctx.fillText(p.label,p.x,p.y);}bctx.globalAlpha=1;bctx.shadowBlur=0;
   }
   function seededHash(n){let x=(n*2654435761)|0;x=Math.imul(x^(x>>>16),2246822507);return((x^(x>>>13))>>>0)/4294967296;}
-  function drawCity(t){const ctx=cctx,W=720,H=310,progress=data.finished/MAX_LEVEL;ctx.clearRect(0,0,W,H);
+  function drawCityLegacy(t){const ctx=cctx,W=720,H=310,progress=data.finished/MAX_LEVEL;ctx.clearRect(0,0,W,H);
     let sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,THEMES[data.theme]?.bg||'#09152f');sky.addColorStop(.62,'#20214f');sky.addColorStop(1,'#132846');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
     ctx.save();for(let i=0;i<46;i++){const x=seededHash(i+4)*W,y=seededHash(i+225)*190;ctx.globalAlpha=.3+seededHash(i+54)*.55;ctx.fillStyle=i%4?'#9dc9ff':'#ffffff';ctx.fillRect(x,y,1.5+seededHash(i+100)*2,1.5+seededHash(i+100)*2);}ctx.restore();
     ctx.shadowColor=THEMES[data.theme]?.color||'#54e6ff';ctx.shadowBlur=32;ctx.fillStyle='#8fafff';ctx.beginPath();ctx.arc(570,69,31,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
@@ -288,6 +291,7 @@
     if(progress>.03){for(let k=0;k<3;k++){const x=(t*.035*(k+1)+k*210)%850-40;ctx.shadowBlur=18;ctx.shadowColor=COLORS[k];ctx.fillStyle=COLORS[k];drawRound(ctx,x,H-30+k*4,27,10,3,COLORS[k]);ctx.shadowBlur=0;}}
     if(cityFlash>0){ctx.fillStyle=`rgba(91,238,255,${Math.min(.3,cityFlash*.12)})`;ctx.fillRect(0,0,W,H);cityFlash=Math.max(0,cityFlash-.017);}
   }
+  function drawCity(t){window.AfterglowArt.city(cctx,t,data.finished/MAX_LEVEL,THEMES[data.theme]||THEMES[0],cityFlash,data.reduceMotion);cityFlash=Math.max(0,cityFlash-.017);}
   let frame=0;
   function tick(t){now=t;if(!document.hidden){drawCity(data.reduceMotion?0:t);if(!data.reduceMotion||frame++%6===0)drawBoard(t);}requestAnimationFrame(tick);}
   // État de test disponible uniquement avec ?test=1 : aucun accès réseau ni privilège.

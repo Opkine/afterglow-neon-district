@@ -1,6 +1,6 @@
 # Confidentialité — AFTERGLOW Neon District
 
-Version 1.0.0, 10 novembre 2026 — Éditeur : LayAdam corp.
+Version 1.1.0, 10 novembre 2026 — Éditeur : LayAdam corp.
 
 AFTERGLOW fonctionne entièrement hors connexion. Cette version ne demande pas
 de création de compte, ne comprend ni publicité, ni suivi comportemental, ni
