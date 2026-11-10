@@ -31,4 +31,5 @@ assert(file('game/fonts/LICENSE-Inter.txt').length>200);
 const gradle=file('android/app/build.gradle').toString('utf8');
 assert(gradle.includes("versionName '1.1.0'"));
 assert(gradle.includes('versionCode 2'));
+assert(gradle.includes("applicationIdSuffix '.preview'"));
 console.log(`PASS: ${scripts.length} local scripts, ${samples.length} CC0 WAV files, OFL font, license notices, offline load order, v1.1.0.`);

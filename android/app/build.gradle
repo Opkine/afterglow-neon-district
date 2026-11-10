@@ -13,6 +13,7 @@ android {
         versionCode 2
         versionName '1.1.0'
         resourceConfigurations += ['fr']
+        manifestPlaceholders = [appLabel: 'AFTERGLOW']
     }
 
     compileOptions {
@@ -21,8 +22,15 @@ android {
     }
 
     buildTypes {
+        debug {
+            // A different app ID: preserve the already installed v1.0.0 and its save.
+            applicationIdSuffix '.preview'
+            versionNameSuffix '-preview'
+            manifestPlaceholders = [appLabel: 'AFTERGLOW PREVIEW']
+        }
         release {
             minifyEnabled false
+            manifestPlaceholders = [appLabel: 'AFTERGLOW']
             // AAB Play Store à signer avec une clé conservée exclusivement
             // dans les secrets CI, jamais dans ce dépôt public.
         }

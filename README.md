@@ -52,8 +52,12 @@ Android pour un usage intégralement hors ligne.
 **Attention :** APK de test (clé de débogage), pas APK commercial signé. Une
 clé Android debug régénérée sur un nouveau runner CI peut empêcher une mise à
 jour par-dessus une ancienne version : une signature stable est indispensable
-pour les futures mises à jour sans désinstallation ni perte de sauvegarde. La
-signature Play App Signing, la génération d'un fichier AAB de release, les tests
+pour les futures mises à jour sans désinstallation ni perte de sauvegarde.
+La **V1.1 Preview** utilise donc temporairement le package Android indépendant
+`com.layadam.afterglow.preview` et apparaît sous le nom `AFTERGLOW PREVIEW`.
+Elle s'installe à côté de la V1.0, dont la progression est intacte, mais elle
+commence une sauvegarde distincte. **Ne pas supprimer la V1.0 pour tester la
+preview.** La signature Play App Signing, la génération d'un fichier AAB de release, les tests
 Samsung et la fiche Play Store restent à finaliser. L'application cible l'API 36
 (Android 16), avec Android 8.0 comme version minimale.
 
