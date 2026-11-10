@@ -35,8 +35,7 @@
   ensure(){
    if(this.off)this.off=false;
    this.contextUnlocked=true;
-   // Allow UI clue effects to use the existing WebAudio engine.
-   if(window.AudioContext||window.webkitAudioContext)super.ensure();
+   // All clips are offline audio assets: no old synthesizer or residual sea loop.
    if(this.musicEnabled)this.playScene();
   }
   setLocation(id){
