@@ -1,5 +1,5 @@
 const test=require('node:test');const a=require('node:assert/strict');
-const {CaseFile,LOCATIONS,OBJECTS,HOURS,CRITICAL}=require('../game/story.js');
+const {CaseFile,LOCATIONS,OBJECTS,HOURS,CRITICAL,REQUIRED}=require('../game/story.js');
 test('12 tangible objects, 3 distinct illustrated investigation scenes',()=>{
  a.equal(LOCATIONS.length,3);a.equal(OBJECTS.length,12);a.equal(HOURS.length,4);
  a.equal(new Set(OBJECTS.map(x=>x.id)).size,12);
@@ -43,4 +43,25 @@ test('invalid memory requests do not crash or unlock anything',()=>{
 });
 test('critical evidence belongs to the case and references can be resolved',()=>{
  for(const id of CRITICAL)a.ok(OBJECTS.find(o=>o.id===id));
+});
+test('step-by-step help offers three levels of contextual hints without unlocking a clue',()=>{
+ const f=new CaseFile();a.equal(f.hint('clock').tier,1);a.equal(f.hint('clock').tier,2);
+ const h=f.hint('clock');a.equal(h.tier,3);a.ok(h.text.includes('Mara'));a.equal(f.hint('clock').tier,3);
+ a.equal(f.count,0);a.equal(f.hint('unknown'),null);
+ const restored=new CaseFile(f.snapshot());a.equal(restored.hints.clock,3);
+ restored.collect('clock',2);a.equal(restored.hint('clock'),null);
+});
+test('notebook guides player to next essential evidence and avoids impossible deductions',()=>{
+ const f=new CaseFile();const first=f.nextLead;
+ a.equal(first.id,CRITICAL[0]);a.ok(LOCATIONS.some(x=>x.id===first.place.id));
+ for(const id of CRITICAL){const o=OBJECTS.find(x=>x.id===id);f.collect(id,o.truth);}
+ a.equal(f.essentialCount,CRITICAL.length);a.equal(f.canDeduce,false);a.equal(f.remaining,REQUIRED-CRITICAL.length);
+ const extra=OBJECTS.find(x=>!CRITICAL.includes(x.id));f.collect(extra.id,extra.truth);
+ a.equal(f.canDeduce,true);a.equal(f.count,REQUIRED);
+});
+test('verdict hints target an incorrect inference and persist progression',()=>{
+ const f=new CaseFile();a.equal(f.verdictHint({who:'nina',why:'garden',proof:'letter'}).field,'who');
+ a.equal(f.verdictHint({who:'mara',why:'tower',proof:'letter'}).tier,2);
+ a.equal(f.verdictHint({who:'mara',why:'garden',proof:'book'}).tier,3);
+ a.equal(new CaseFile(f.snapshot()).deductionHints,3);
 });

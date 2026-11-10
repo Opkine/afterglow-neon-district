@@ -9,12 +9,21 @@ Une expérience entièrement distincte des projets AFTERGLOW et ASTRA TIDE, avec
 - Trois environnements originaux, illustration gouache cinématographique : chambre 307, grand hall, verrière.
 - Douze objets manipulables, chacun ayant quatre scènes de mémoire à consulter sur une ligne de temps.
 - Preuves à consigner au moment exact du souvenir significatif.
+- Guide interactif dès la première enquête et bouton « COMMENT JOUER » toujours disponible.
+- **Aide graduelle** pour chacun des douze objets : trois indices à la demande, du conseil discret à l'explication précise.
+- Mise en évidence des instants où une preuve peut être consignée ; le joueur n'a plus à deviner si le curseur est au bon endroit.
+- **Carnet orienté objectifs** : cinq preuves déterminantes, au moins six souvenirs au total, prochaine piste localisée et repère directement souligné dans le décor.
+- Aide à la déduction en trois niveaux, ciblée sur la réponse encore incorrecte.
 - Deux témoins illustrés (Nina et Louis) avec trois questions chacun.
 - Carnet d'enquête persistant et carte des lieux non linéaire.
 - Déduction finale sur trois axes (responsable, mobile, preuve), conditionnée par des indices essentiels.
 - Deux fins narratives différentes selon le choix du joueur.
 - Ambiance acoustique originale procédurale hors ligne, vibrations et sauvegarde locale.
 - Fonctionnement Android immersif autonome, sans connexion, compte, publicité, achat ni suivi.
+
+## Mise à jour Android v0.2.0
+
+L'APK de test est signé automatiquement sur GitHub Actions avec une clé de débogage éphémère. **Pour ne pas risquer de perdre les sauvegardes de la v0.1.0, la v0.2.0 s'installe à côté de l'ancienne application** sous le nom « PALIMPSESTE AIDE » (package indépendant `com.layadam.palimpseste.preview02`). La progression commence donc à zéro dans cette nouvelle version ; ne désinstallez pas l'ancienne tant que vous souhaitez conserver sa sauvegarde. Une clé de signature durable sera nécessaire avant la publication et pour les vraies mises à jour. Les aides fonctionnent sans Internet.
 
 ## Construire et tester
 

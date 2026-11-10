@@ -95,34 +95,64 @@
   };
   const CRITICAL=['postcard','telegram','notebook','letter','register'];
   const VALID={who:'mara',why:'garden',proof:'letter'};
+  const REQUIRED=6;
+  const HINTS={
+    clock:['Les aiguilles peuvent mentir : une heure fixe n’est pas forcément une heure vraie.','Cherche le geste qui immobilise l’horloge autour de 21 h 13.','À 21 h 13, Mara arrête elle-même les aiguilles.'],
+    suitcase:['Une valise ouverte prouve-t-elle vraiment qu’on est parti ?','Regarde la valise avant que le drame ne commence.','À 20 h 15, Mara garnit la valise de journaux, pas de vêtements.'],
+    postcard:['Une carte postale peut contenir un rendez-vous.','Cherche qui écrit sur la carte avant 21 h.','À 20 h 45, Nina donne rendez-vous à Mara sous la verrière.'],
+    balcony:['La porte du balcon raconte aussi les passages qui n’ont pas eu lieu.','Examine le seuil lorsque la chambre est déjà abandonnée.','À 22 h 10, le sable du seuil est intact : personne ne s’est enfui par là.'],
+    register:['Une heure a été corrigée dans un document officiel.','Concentre-toi sur la soirée autour de 21 h 13.','À 21 h 13, Louis falsifie l’heure de sortie de Mara.'],
+    bell:['Une clochette sert parfois à transmettre un code.','Écoute les coups de sonnette à l’heure supposée du départ.','À 21 h 13, Louis fait sonner la clochette trois fois : un signal.'],
+    umbrella:['Un objet humide peut indiquer le chemin d’une personne.','Qui portait le parapluie avant la disparition ?','À 20 h 45, Nina revient de la verrière avec de la terre rouge.'],
+    telegram:['Le mobile se trouve peut-être dans les affaires de l’hôtel.','Lis ce qui arrive après que le directeur cache le télégramme.','À 22 h 10, le télégramme annonce la vente et la destruction de la verrière.'],
+    photo:['Une vieille photo peut révéler ce que les personnages veulent protéger.','Retourne aux souvenirs de jeunesse, avant la soirée.','À 20 h 15, la photo rappelle la promesse faite à leur grand-mère.'],
+    key:['Cette clé sert surtout à savoir de quel côté la porte a été fermée.','Observe la serrure au moment où tout bascule.','À 21 h 13, la verrière est verrouillée de l’intérieur.'],
+    letter:['La preuve décisive est parfois un message écrit après la disparition.','Reviens à la lettre à l’instant le plus tardif.','À 22 h 10, Mara écrit qu’elle va bien et demande une nuit de répit.'],
+    notebook:['Le carnet donne la raison de toute la mise en scène.','Lis les pages avant que l’heure de disparition soit fabriquée.','À 20 h 45, Mara consigne son plan pour empêcher la vente.']
+  };
+  const FIELD_HINTS={
+    who:['Une disparition préparée n’est pas forcément un enlèvement.','Compare l’horloge arrêtée, la valise et le carnet de Mara.','Mara a organisé sa propre disparition.'],
+    why:['Cherche un événement imminent qui toucherait toute la famille.','Le télégramme et le carnet parlent tous deux de la verrière.','Le but était d’empêcher la vente et la destruction du jardin.'],
+    proof:['Quelle trace permet de savoir que Mara est encore là après 21 h 13 ?','Un message retrouvé dans la verrière est daté après la disparition.','La lettre de Mara est la preuve décisive.']
+  };
   class CaseFile{
-    constructor(saved){this.version=1;this.scene='room';this.clues=[];this.seen={};this.asked={};this.trust=0;this.mistakes=0;this.ending=null;this.started=true;
+    constructor(saved){this.version=1;this.scene='room';this.clues=[];this.seen={};this.asked={};this.hints={};this.deductionHints=0;this.trust=0;this.mistakes=0;this.ending=null;this.started=true;
       if(saved&&saved.version===1){if(LOCATIONS.some(x=>x.id===saved.scene))this.scene=saved.scene;
         this.clues=Array.isArray(saved.clues)?saved.clues.filter(id=>OBJECTS.some(o=>o.id===id)).slice(0,OBJECTS.length):[];
         this.seen=saved.seen&&typeof saved.seen==='object'?saved.seen:{};
         this.asked=saved.asked&&typeof saved.asked==='object'?saved.asked:{};
+        if(saved.hints&&typeof saved.hints==='object')this.hints=Object.fromEntries(Object.entries(saved.hints).filter(([id])=>OBJECTS.some(o=>o.id===id)).map(([id,n])=>[id,Math.max(0,Math.min(3,Number(n)||0))]));
+        this.deductionHints=Math.max(0,Math.min(3,Number(saved.deductionHints)||0));
         this.trust=Math.max(0,Math.min(6,Number(saved.trust)||0));this.mistakes=Math.max(0,Math.min(100,Number(saved.mistakes)||0));
         if(['reveal','protect'].includes(saved.ending))this.ending=saved.ending;
       }
     }
     get count(){return this.clues.length;}
-    get canDeduce(){return this.count>=7&&CRITICAL.every(k=>this.clues.includes(k));}
+    get canDeduce(){return this.count>=REQUIRED&&CRITICAL.every(k=>this.clues.includes(k));}
+    get essentialCount(){return CRITICAL.filter(id=>this.clues.includes(id)).length;}
+    get remaining(){return Math.max(0,REQUIRED-this.count);}
+    get nextLead(){const first=CRITICAL.find(id=>!this.clues.includes(id))||OBJECTS.find(o=>!this.clues.includes(o.id))?.id;
+      const o=OBJECTS.find(x=>x.id===first);return o?{id:o.id,object:o.name,place:LOCATIONS.find(l=>l.id===o.scene),hour:HOURS[o.truth],isEssential:CRITICAL.includes(o.id)}:null;
+    }
     get completion(){return Math.round(this.count/OBJECTS.length*100);}
     move(place){if(!LOCATIONS.some(l=>l.id===place))return false;this.scene=place;return true;}
     study(id,index){const obj=OBJECTS.find(x=>x.id===id);if(!obj||!Number.isInteger(index)||index<0||index>=HOURS.length)return null;
       this.seen[id]=Math.max(this.seen[id]||0,index+1);return{...obj,hour:HOURS[index],text:obj.frames[index],canCollect:index===obj.truth&&!this.clues.includes(id),already:this.clues.includes(id)};
     }
     collect(id,index){const o=OBJECTS.find(x=>x.id===id);if(!o||o.truth!==index||this.clues.includes(id))return false;this.clues.push(id);return true;}
+    hint(id){if(!HINTS[id]||this.clues.includes(id))return null;const tier=Math.min(3,(this.hints[id]||0)+1);this.hints[id]=tier;return{text:HINTS[id][tier-1],tier,hour:tier>=2?HOURS[OBJECTS.find(x=>x.id===id).truth]:null};}
+    verdictHint(answers){const wrong=Object.keys(VALID).find(k=>answers?.[k]!==VALID[k])||'proof';this.deductionHints=Math.min(3,this.deductionHints+1);
+      return{field:wrong,tier:this.deductionHints,text:FIELD_HINTS[wrong][this.deductionHints-1]};}
     ask(person,index){const p=PEOPLE[person];if(!p||!p.questions[index])return null;const key=person+'-'+index;
       if(!this.asked[key]){this.asked[key]=true;this.trust=Math.min(6,this.trust+p.questions[index].trust);}
       return p.questions[index].a;
     }
     deduce(answers,choice){if(!this.canDeduce)return{success:false,reason:'Il manque des preuves essentielles.'};
-      if(!answers||!Object.keys(VALID).every(k=>answers[k]===VALID[k])){this.mistakes++;return{success:false,reason:'La chronologie ne confirme pas cette hypothèse. Reprends les souvenirs.'};}
+      if(!answers||!Object.keys(VALID).every(k=>answers[k]===VALID[k])){this.mistakes++;return{success:false,reason:'Une de ces déductions est contredite par les preuves.',wrongFields:Object.keys(VALID).filter(k=>answers?.[k]!==VALID[k])};}
       if(!['protect','reveal'].includes(choice))return{success:false,reason:'Choisis ce que tu feras de la vérité.'};
       this.ending=choice;return{success:true,ending:choice,trust:this.trust};
     }
-    snapshot(){return{version:1,scene:this.scene,clues:[...this.clues],seen:{...this.seen},asked:{...this.asked},trust:this.trust,mistakes:this.mistakes,ending:this.ending};}
+    snapshot(){return{version:1,scene:this.scene,clues:[...this.clues],seen:{...this.seen},asked:{...this.asked},hints:{...this.hints},deductionHints:this.deductionHints,trust:this.trust,mistakes:this.mistakes,ending:this.ending};}
   }
-  return{HOURS,LOCATIONS,OBJECTS,PEOPLE,CRITICAL,VALID,CaseFile};
+  return{HOURS,LOCATIONS,OBJECTS,PEOPLE,CRITICAL,REQUIRED,VALID,CaseFile};
 });

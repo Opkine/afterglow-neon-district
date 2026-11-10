@@ -1,0 +1,23 @@
+/* Progressive, non-spoiler assistance for the first dossier. */
+.help-float {
+  position: absolute; right: 16px; bottom: calc(148px + var(--safe-bottom)); z-index: 4;
+  border: 1px solid #f3e8c3; border-radius: 50px; color: #35251d;
+  background: #fff2d3; box-shadow: 0 5px 25px #24150ab0;
+  padding: 12px 14px; font: 800 11px/1 system-ui,sans-serif; letter-spacing: .7px;
+  touch-action: manipulation;
+}
+.guide-panel { z-index: 15; padding: calc(42px + var(--safe-top)) 28px calc(45px + var(--safe-bottom)); }
+.guide-panel .guide-title { font-size: clamp(29px, 7vw, 43px); line-height: 1.05; color: #342c24; }
+.guide-step { margin: 17px 0; background: #eee2c9; border-left: 4px solid #88704e; padding: 16px; line-height: 1.55; color: #49392d; }
+.guide-panel .ink-button { margin-top: 23px; }
+.hint-box,.lead-box { margin-top: 20px; border: 1px solid #ad946f; background: #f0e6d2; color: #4b382b; padding: 15px; border-radius: 4px; }
+.hint-title { display: block; margin: 0 0 9px; color: #785f43; letter-spacing: 1.3px; font: 800 10px/1.3 system-ui,sans-serif; }
+.hint-button,.lead-button { display: block; width: 100%; border: 1px solid #75593d; border-radius: 3px; padding: 13px 10px; background: #765437; color: #fffae8; font: 800 11px/1.3 system-ui,sans-serif; letter-spacing: 1px; }
+.lead-button { background: #516748; border-color: #3e5737; }
+.hint-copy,.lead-copy { margin: 12px 0 0; font-size: 15px; line-height: 1.5; color: #443226; }
+.lead-copy { margin: 3px 0 16px; }
+.memory-found .memory-art { border-color: #9db67e; outline: 2px solid #5c7a4a; box-shadow: 0 0 28px #829c58a8; }
+.memory-found #recordBtn { background: #526d48; color: #f5ffeb; box-shadow: 0 4px 20px #6c995d8c; animation: cluePulse 1.6s ease-in-out infinite; }
+.hotspot.hint-target { outline: 4px solid #fff4a8; box-shadow: 0 0 0 13px #fff9b066, 0 0 42px 18px #ffca75e3; animation: markerBreath .8s infinite; }
+@keyframes cluePulse { 50% { box-shadow: 0 2px 31px #8ecc77db; } }
+@media (prefers-reduced-motion: reduce) { .memory-found #recordBtn,.hotspot.hint-target { animation: none; } }

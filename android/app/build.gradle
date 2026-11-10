@@ -10,8 +10,8 @@ android {
         applicationId 'com.layadam.palimpseste'
         minSdk 26
         targetSdk 36
-        versionCode 1
-        versionName '0.1.0'
+        versionCode 2
+        versionName '0.2.0'
         resourceConfigurations += ['fr']
         manifestPlaceholders = [appLabel: 'PALIMPSESTE']
     }
@@ -23,10 +23,11 @@ android {
 
     buildTypes {
         debug {
-            // Test-only package: keep earlier preview installations and saves intact.
-            applicationIdSuffix '.preview'
+            // CI generates an ephemeral debug key: install alongside v0.1 instead of risking
+            // an incompatible update or an unintentional loss of the original local save.
+            applicationIdSuffix '.preview02'
             versionNameSuffix '-preview'
-            manifestPlaceholders = [appLabel: 'PALIMPSESTE PREVIEW']
+            manifestPlaceholders = [appLabel: 'PALIMPSESTE AIDE']
         }
         release {
             minifyEnabled false
