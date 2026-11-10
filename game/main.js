@@ -21,7 +21,7 @@
     {id:'chain',label:'Créer 3 grandes chaînes (6+)',target:3,reward:70},
     {id:'power',label:'Déployer 2 pouvoirs',target:2,reward:65}];
   const fresh = () => ({version:1, level:1, coins:0, stars:{}, finished:0, theme:0, owned:[0], sound:true, music:true, haptics:true, reduceMotion:false, daily:{}, achievements:{}, game:null,
-    inventory:{bomb:1,row:1,column:1,color:0},giftDate:'',missions:{date:'',win:0,chain:0,power:0,claimed:{}},milestones:{},streak:0});
+    inventory:{bomb:1,row:1,column:1,color:0},giftDate:'',missions:{date:'',win:0,chain:0,power:0,claimed:{}},milestones:{},streak:0,cityColors:{},citySignals:{date:'',visited:[]}});
   let data = fresh();
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE));
@@ -33,11 +33,14 @@
       for(const p of KEYS)if(!safeCount(data.inventory[p]))data.inventory[p]=0;
       if(!data.missions||typeof data.missions!=='object')data.missions=fresh().missions;
       if(!data.milestones||typeof data.milestones!=='object')data.milestones={};
+      if(!data.cityColors||typeof data.cityColors!=='object')data.cityColors={};
+      if(!data.citySignals||typeof data.citySignals!=='object'||!Array.isArray(data.citySignals.visited))data.citySignals=fresh().citySignals;
     }
   } catch (_) { /* Un stockage endommagé ne doit jamais bloquer le démarrage. */ }
   let game = null, view = 'play', selection = [], pointerId = null, modalOpen = false;
   let fx = [], popups = [], shockwaves = [], beamFX=[], falls = [], cityFlash = 0, now = 0, lastDropAt = -1000, toastTimer = 0;
   let activePower=null, hintPath=[],hintUntil=0,lastActivity=0,lastHint=-30000,lastClock=0,lastClockSave=0;
+  let cityMapCtx=null,winCityCtx=null;
   function safeCount(n){return Number.isInteger(n)&&n>=0&&n<=9999;}
   const safeInteger = n => Number.isFinite(n) && Number.isInteger(n);
   const save = () => { try { data.game = game; localStorage.setItem(STORAGE, JSON.stringify(data)); } catch (_) { notify('Sauvegarde indisponible sur cet appareil'); } };
@@ -57,6 +60,19 @@
   const escapeHTML = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const clockText=seconds=>`${String(Math.floor(Math.max(0,seconds)/60)).padStart(2,'0')}:${String(Math.floor(Math.max(0,seconds)%60)).padStart(2,'0')}`;
   function ensureMissions(){if(data.missions.date!==dateKey())data.missions={date:dateKey(),win:0,chain:0,power:0,claimed:{}};}
+  function ensureCitySignals(){
+    if(data.citySignals.date!==dateKey())data.citySignals={date:dateKey(),visited:[]};
+  }
+  function collectCitySignal(sector){
+    ensureCitySignals();
+    if(!safeInteger(sector)||sector<1||sector>data.finished)return false;
+    if(data.citySignals.visited.includes(sector)||data.citySignals.visited.length>=3)return false;
+    data.citySignals.visited.push(sector);
+    data.coins+=15;
+    save();updateCityOnly();sfx('collect',1.22);vibrate(18);
+    notify(`SIGNAL CAPTÉ ! +15 ✦ · ${data.citySignals.visited.length}/3`);
+    return true;
+  }
   function questProgress(id,count=1){ensureMissions();data.missions[id]=Math.min(999,(data.missions[id]||0)+count);}
 
   function validGame(s) {
@@ -104,6 +120,7 @@
     showView('play');
   }
   function loadOrStart() {
+    window.AfterglowArt.syncColors?.(data.cityColors);
     if (validGame(data.game) && data.game.moves>0) {
       game=data.game;game.elapsed=Number.isFinite(game.elapsed)?clamp(game.elapsed,0,86400):0;
       game.charge=Number.isInteger(game.charge)?clamp(game.charge,0,100):0;
@@ -157,7 +174,7 @@
   function vibrate(ms=15) {if(data.haptics && navigator.vibrate)navigator.vibrate(ms);}
   function notify(msg) {dom.toast.textContent=msg;dom.toast.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>dom.toast.classList.remove('visible'),2200);}
   function openModal(html) {modalOpen=true;dom.modal.innerHTML=html;dom.veil.classList.remove('hidden');}
-  function closeModal() {modalOpen=false;dom.veil.classList.add('hidden');}
+  function closeModal() {modalOpen=false;winCityCtx=null;dom.veil.classList.add('hidden');}
   function showWelcome(){openModal(`<div class="hero-symbol">✦</div><span class="kicker">BIENVENUE À AFTERGLOW</span><h2>RÉVEILLE LA VILLE.</h2><p>Une cité entière s'est éteinte. Fais jaillir des réactions en chaîne pour rallumer ses quartiers.</p><ul><li>Glisse sur au moins <b>3 cristaux identiques</b>.</li><li>Collecte les <b>couleurs demandées</b> avant la fin des coups. Certains niveaux ajoutent une troisième couleur ou un réacteur !</li><li>Une chaîne de <b>6+</b> déclenche une onde spéciale ; une longue série recharge tes bonus.</li><li>Le bouton <b>INDICE</b> affiche un chemin. Après quelques secondes sans jouer, l'aide apparaît toute seule.</li><li>Les <b>bombes, lasers et prismes</b> ciblent un cristal et ne coûtent aucun coup.</li><li>Les victoires offrent des <b>éclats</b> à dépenser dans la boutique. Le chronomètre compte ton temps.</li></ul><div class="actions"><button class="action" id="begin">JE RALLUME LA VILLE</button></div><p class="fineprint">Hors ligne • Aucune dépense obligatoire • Pas de limite d'énergie</p>`);$('begin').onclick=()=>{data.achievements.tutorial=true;save();closeModal();sfx('win');};}
   function drawRound(ctx,x,y,w,h,r,color){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=color;ctx.fill();}
   function pickAt(e){const rect=dom.board.getBoundingClientRect(), x=(e.clientX-rect.left)/rect.width*600,y=(e.clientY-rect.top)/rect.height*700;const col=Math.floor((x-10)/(580/C)),row=Math.floor((y-10)/(680/R));return col>=0&&col<C&&row>=0&&row<R?gridIndex(col,row):-1;}
@@ -242,6 +259,7 @@
     if(!hasMove(game.tiles))game.tiles=makeTiles();
     falls=moved;lastDropAt=age;
     shockwaves.push({x:10+(coords(origin).x+.5)*580/C,y:10+(coords(origin).y+.5)*680/R,start:age,color:COLORS[col],power:bonus?1.7:1});
+    window.AfterglowArt.react?.(col,chainSize||5);
     cityFlash=bonus?1:.52;
     if(power){popup(BOOSTS[power].name,300,350,COLORS[col]);sfx(power==='color'?'epic':power==='row'?'purchase':power==='column'?'win':'burst');vibrate(60);}
     else if(chainSize>=9) {data.achievements.bigChain=true;popup(`SUPER NOVA ×${chainSize}`,300,350,COLORS[col]);sfx('epic',1.1);vibrate(65);}
@@ -277,12 +295,18 @@
       if(first){data.streak=Math.min(99,data.streak+1);credited=earned+Math.min(40,data.streak*8);data.coins+=credited;data.finished=Math.max(data.finished,game.level);questProgress('win');}
       else if(stars>data.stars[k]){credited=10*(stars-data.stars[k]);data.coins+=credited;}
       data.stars[k]=Math.max(stars,data.stars[k]||0);
+      if(first){
+        data.cityColors[k]=COLORS[game.targets[0]];
+        window.AfterglowArt.syncColors?.(data.cityColors);
+      }
       if(game.level>=data.level&&data.level<=MAX_LEVEL)data.level=Math.min(MAX_LEVEL+1,game.level+1);
     }
+    if(game.mode==='level'&&first)window.AfterglowArt.ignite?.(game.level);
     game=null;save();updateCityOnly();cityFlash=2;
     const finalLevel=data.level>MAX_LEVEL;
     const unclaimed=MILESTONES.find(level=>data.finished>=level&&!data.milestones[level]);
-    openModal(`<div class="hero-symbol">${finalLevel?'✺':'✦'}</div><span class="kicker">${finalLevel?'CAMPAGNE TERMINÉE':'SECTEUR RÉACTIVÉ'}</span><h2>${first?'LA VILLE REPREND VIE !':credited>0?'NOUVEAU RECORD !':'BRAVO, ENCORE !'}</h2><div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="score">+${credited.toLocaleString('fr-FR')} <small style="font-size:17px;color:var(--gold)">✦</small></div><p>${first?'Un nouveau bâtiment s’illumine dans ta ville.':credited>0?'Tu as amélioré la maîtrise de ce secteur.':'Un secteur maîtrisé, tu peux retenter un meilleur score.'}</p><div class="rowstats"><div><b>${clockText(time)}</b><small>CHRONO</small></div><div><b>×${data.streak}</b><small>SÉRIE</small></div><div><b>${stars}/3</b><small>ÉTOILES</small></div></div>${unclaimed?'<p class="reward-notice">🎁 Coffre de quartier disponible dans VILLE !</p>':''}<div class="actions"><button class="action" id="next">${finalLevel?'REJOUER':'NIVEAU SUIVANT'}</button><button class="action alt" id="viewcity">RÉCOMPENSES / VILLE</button></div>`);
+    openModal(`<div class="hero-symbol">${finalLevel?'✺':'✦'}</div><span class="kicker">${finalLevel?'CAMPAGNE TERMINÉE':'SECTEUR RÉACTIVÉ'}</span><h2>${first?'LA VILLE REPREND VIE !':credited>0?'NOUVEAU RECORD !':'BRAVO, ENCORE !'}</h2><div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="score">+${credited.toLocaleString('fr-FR')} <small style="font-size:17px;color:var(--gold)">✦</small></div><div class="win-city-frame"><canvas id="win-city" width="720" height="310" aria-label="La nouvelle façade s'allume dans la ville"></canvas><small>LA VILLE CHANGE À CHAQUE VICTOIRE</small></div><p>${first?'Un nouveau bâtiment s’illumine dans ta ville. Touche les façades éclairées pour capter leurs signaux !':credited>0?'Tu as amélioré la maîtrise de ce secteur.':'Un secteur maîtrisé, tu peux retenter un meilleur score.'}</p><div class="rowstats"><div><b>${clockText(time)}</b><small>CHRONO</small></div><div><b>×${data.streak}</b><small>SÉRIE</small></div><div><b>${stars}/3</b><small>ÉTOILES</small></div></div>${unclaimed?'<p class="reward-notice">🎁 Coffre de quartier disponible dans VILLE !</p>':''}<div class="actions"><button class="action" id="next">${finalLevel?'REJOUER':'NIVEAU SUIVANT'}</button><button class="action alt" id="viewcity">RÉCOMPENSES / VILLE</button></div>`);
+    winCityCtx=$('win-city').getContext('2d');
     $('next').onclick=()=>{closeModal();newGame('level',Math.min(data.level,MAX_LEVEL));};
     $('viewcity').onclick=()=>{closeModal();newGame('level',Math.min(data.level,MAX_LEVEL));showView('city');};
     sfx('win');
@@ -301,17 +325,39 @@
     sfx('fail');
   }
   function showView(next){view=next;dom.secondary.classList.toggle('hidden',next==='play');dom.mission.classList.toggle('hidden',next!=='play');dom.gameplay.classList.toggle('hidden',next!=='play');
+    if(next!=='city')cityMapCtx=null;
     document.querySelectorAll('.nav-btn').forEach(b=>{b.classList.toggle('active',b.dataset.view===next);b.setAttribute('aria-current',b.dataset.view===next?'page':'false');});
     if(next==='city')renderCityView();if(next==='daily')renderDailyView();if(next==='shop')renderShopView();if(next==='settings')renderSettingsView();
   }
   function renderCityView(){const completed=data.finished,distUnlocked=Math.max(1,Math.ceil(Math.max(1,completed)/10));
     dom.secondary.innerHTML=`<span class="eyebrow">TA MÉGALOPOLE VIVANTE</span><h2>LA CITÉ RENAÎT ✦</h2><p class="lead">Chaque niveau accompli rallume un secteur de ta ville. Explore les huit quartiers, collectionne les étoiles et transforme la nuit en spectacle.</p><div class="section-card"><span class="meta">PROGRESSION GLOBALE</span><h3>${completed} / ${MAX_LEVEL} secteurs éclairés</h3><div class="progress-track"><div style="width:${completed/MAX_LEVEL*100}%"></div></div><p>Étoiles obtenues : ${Object.values(data.stars).reduce((s,n)=>s+(Number(n)||0),0)} / ${MAX_LEVEL*3}</p></div><div class="district-grid">${DISTRICTS.map((d,i)=>`<div class="district ${i+1>distUnlocked?'locked':''}"><span class="number">QUARTIER ${String(i+1).padStart(2,'0')}</span><span class="symbol">${i+1>distUnlocked?'◇':i<distUnlocked-1?'✦':'✧'}</span><b>${d}</b><small>${clamp(completed-i*10,0,10)} / 10 secteurs</small></div>`).join('')}</div><div class="actions"><button class="action" id="continue">REPRENDRE LA PARTIE</button></div>`;
+    ensureCitySignals();
+    dom.secondary.innerHTML+=`<div class="section-card living-city"><span class="meta">ÉVÉNEMENT QUOTIDIEN</span><h3>🌆 Explore ta ville vivante</h3><p>Chaque victoire éclaire un nouveau bâtiment aux couleurs de tes cristaux. Touche les façades pour lancer leurs néons et récupérer jusqu'à trois signaux lumineux par jour.</p><div class="live-city-frame"><canvas id="city-map" width="720" height="310" aria-label="Panorama interactif de la ville reconstruite"></canvas><span>TOUCHE UN IMMEUBLE ÉCLAIRÉ ✦</span></div><div class="signal-progress"><b>✦ SIGNAUX CAPTÉS</b><strong>${data.citySignals.visited.length}/3</strong><span>+15 ✦ par nouveau signal</span></div></div>`;
     const claimable=MILESTONES.filter(lv=>completed>=lv&&!data.milestones[lv]);
     const upcoming=MILESTONES.find(lv=>lv>completed);
     dom.secondary.innerHTML+=`<div class="section-card"><span class="meta">COFFRES DE QUARTIERS</span><h3>🎁 Récompenses de prestige</h3><p>Des éclats et des pouvoirs garantis à chaque palier. Aucun hasard ni achat obligatoire.</p>${claimable.map(lv=>`<div class="gift-card"><div><b>PALIER ${lv}</b><small>${120+lv*4} ✦ + 1 pouvoir spécial</small></div><button class="action small" data-claim-milestone="${lv}">RÉCUPÉRER</button></div>`).join('')}${upcoming?`<div class="gift-card dormant"><div><b>PROCHAIN COFFRE · ${upcoming}</b><small>${completed} / ${upcoming} secteurs éclairés</small></div><span>🔒</span></div>`:''}${!claimable.length&&!upcoming?'<p>Tous les coffres ont été récupérés !</p>':''}</div>`;
     $('continue').onclick=()=>showView('play');
+    const panorama=$('city-map');cityMapCtx=panorama.getContext('2d');
+    panorama.addEventListener('click',e=>interactCity(e,panorama));
     dom.secondary.querySelectorAll('[data-claim-milestone]').forEach(b=>b.onclick=()=>claimMilestone(Number(b.dataset.claimMilestone)));
   }
+  function interactCity(e,canvas){
+    const rect=canvas.getBoundingClientRect();
+    if(!rect.width||!rect.height)return;
+    const x=(e.clientX-rect.left)/rect.width*720,y=(e.clientY-rect.top)/rect.height*310;
+    const sector=window.AfterglowArt.tap?.(x,y,data.finished);
+    if(!sector)return;
+    if(!sector.active){
+      notify(`SECTEUR ${String(sector.sector).padStart(2,'0')} ÉTEINT · Continue la campagne !`);
+      sfx('menu');return;
+    }
+    if(!collectCitySignal(sector.sector)){
+      notify(`✦ ${sector.district} · secteur ${sector.sector} déjà exploré ou quota atteint`);
+      sfx('spark');
+    }
+    if(view==='city')renderCityView();
+  }
+  dom.city.addEventListener('click',e=>interactCity(e,dom.city));
   function renderDailyView(){const key=dateKey(),record=data.daily[key],done=!!record?.completed;
     dom.secondary.innerHTML=`<span class="eyebrow">UN DÉFI PARTAGÉ POUR TOUS</span><h2>LE SIGNAL DU JOUR</h2><p class="lead">Même combinaison de départ pour tout le monde. Aucun abonnement, aucune connexion requise. Chaque jour, un nouveau puzzle, avec une seule règle : faire mieux qu'hier.</p><div class="section-card" style="text-align:center"><div style="font-size:42px;color:var(--gold);text-shadow:0 0 24px #ffd56e">◎</div><span class="meta">${escapeHTML(key)}</span><h3>${done?'MISSION ACCOMPLIE':'LA VILLE A BESOIN DE TOI'}</h3><p>Deux couleurs à collecter • 24 coups • Même grille pour tous</p>${done?`<div class="score" style="font-weight:900;font-size:28px;color:var(--cyan)">${record.best.toLocaleString('fr-FR')} pts</div><p>Meilleur score actuel</p>`:''}<div class="actions"><button class="action" id="startDaily">${done?'AMÉLIORER MON SCORE':'LANCER LE DÉFI'}</button></div></div><div class="section-card"><h3>✓ Pourquoi revenir ?</h3><p>Une nouvelle combinaison chaque jour, un score à dépasser et des récompenses en éclats pour ta première réussite quotidienne. Tes progrès ne dépendent jamais d'une connexion.</p>${done?'<button class="action alt" id="share">PARTAGER MON SCORE</button>':''}</div>`;
     ensureMissions();
@@ -368,7 +414,7 @@
     else notify(msg);
   }
   function settingButton(name,desc,prop){return `<div class="setting-row"><div><b>${name}</b><small>${desc}</small></div><button class="toggle ${data[prop]?'on':''}" data-setting="${prop}" aria-pressed="${data[prop]}">${data[prop]?'ACTIF':'OFF'}</button></div>`;}
-  function renderSettingsView(){dom.secondary.innerHTML=`<span class="eyebrow">TON EXPÉRIENCE</span><h2>PERSONNALISER</h2><div class="section-card"><h3>Ambiance cinématique</h3>${settingButton('Musique originale','Electro-ambient adaptative en boucle','music')}${settingButton('Effets sonores HD','Échantillons Kenney CC0, mixés avec Howler.js','sound')}${settingButton('Vibrations','Retour tactile Android','haptics')}${settingButton('Animations réduites','Confort visuel et économie d’énergie','reduceMotion')}</div><div class="section-card"><h3>Apparence du jeu</h3><p>Débloque des ambiances en jouant, sans achat réel.</p><div class="theme-grid">${THEMES.map((t,i)=>`<button class="theme-choice ${data.theme===i?'active':''}" data-theme="${i}"><span class="swatch" style="background:${t.color};color:${t.color}"></span>${t.name}<small>${data.owned.includes(i)?data.theme===i?'ÉQUIPÉ':'ACQUIS':`${t.price} ✦`}</small></button>`).join('')}</div></div><div class="section-card"><h3>À propos</h3><p>AFTERGLOW — Neon District · v1.2.0</p><p>© 2026 LayAdam corp. Jeu hors ligne sans publicité ni compte utilisateur. Sauvegarde locale à chaque coup. Ressources ouvertes et licences dans THIRD_PARTY.md.</p><button class="action alt" id="rules">REVOIR LES RÈGLES</button></div><div class="section-card"><h3>Progression</h3><p>Les données sont conservées exclusivement sur cet appareil. Attention : effacer le stockage de l'application peut supprimer ta progression.</p><button class="action alt" id="reset">EFFACER MA PARTIE</button></div>`;
+  function renderSettingsView(){dom.secondary.innerHTML=`<span class="eyebrow">TON EXPÉRIENCE</span><h2>PERSONNALISER</h2><div class="section-card"><h3>Ambiance cinématique</h3>${settingButton('Musique originale','Electro-ambient adaptative en boucle','music')}${settingButton('Effets sonores HD','Échantillons Kenney CC0, mixés avec Howler.js','sound')}${settingButton('Vibrations','Retour tactile Android','haptics')}${settingButton('Animations réduites','Confort visuel et économie d’énergie','reduceMotion')}</div><div class="section-card"><h3>Apparence du jeu</h3><p>Débloque des ambiances en jouant, sans achat réel.</p><div class="theme-grid">${THEMES.map((t,i)=>`<button class="theme-choice ${data.theme===i?'active':''}" data-theme="${i}"><span class="swatch" style="background:${t.color};color:${t.color}"></span>${t.name}<small>${data.owned.includes(i)?data.theme===i?'ÉQUIPÉ':'ACQUIS':`${t.price} ✦`}</small></button>`).join('')}</div></div><div class="section-card"><h3>À propos</h3><p>AFTERGLOW — Neon District · v1.3.0</p><p>© 2026 LayAdam corp. Jeu hors ligne sans publicité ni compte utilisateur. Sauvegarde locale à chaque coup. Ressources ouvertes et licences dans THIRD_PARTY.md.</p><button class="action alt" id="rules">REVOIR LES RÈGLES</button></div><div class="section-card"><h3>Progression</h3><p>Les données sont conservées exclusivement sur cet appareil. Attention : effacer le stockage de l'application peut supprimer ta progression.</p><button class="action alt" id="reset">EFFACER MA PARTIE</button></div>`;
     dom.secondary.querySelectorAll('[data-setting]').forEach(b=>b.onclick=()=>{data[b.dataset.setting]=!data[b.dataset.setting];window.AfterglowAudio?.setOptions({sound:data.sound,music:data.music});save();renderSettingsView();sfx('menu');});
     dom.secondary.querySelectorAll('[data-theme]').forEach(b=>b.onclick=()=>selectTheme(Number(b.dataset.theme)));
     $('rules').onclick=showWelcome;
@@ -453,7 +499,13 @@
     if(progress>.03){for(let k=0;k<3;k++){const x=(t*.035*(k+1)+k*210)%850-40;ctx.shadowBlur=18;ctx.shadowColor=COLORS[k];ctx.fillStyle=COLORS[k];drawRound(ctx,x,H-30+k*4,27,10,3,COLORS[k]);ctx.shadowBlur=0;}}
     if(cityFlash>0){ctx.fillStyle=`rgba(91,238,255,${Math.min(.3,cityFlash*.12)})`;ctx.fillRect(0,0,W,H);cityFlash=Math.max(0,cityFlash-.017);}
   }
-  function drawCity(t){window.AfterglowArt.city(cctx,t,data.finished/MAX_LEVEL,THEMES[data.theme]||THEMES[0],cityFlash,data.reduceMotion);cityFlash=Math.max(0,cityFlash-.017);}
+  function drawCity(t){
+    const theme=THEMES[data.theme]||THEMES[0],progress=data.finished/MAX_LEVEL;
+    window.AfterglowArt.city(cctx,t,progress,theme,cityFlash,data.reduceMotion);
+    if(cityMapCtx&&view==='city')window.AfterglowArt.city(cityMapCtx,t,progress,theme,cityFlash,data.reduceMotion);
+    if(winCityCtx&&modalOpen)window.AfterglowArt.city(winCityCtx,t,progress,theme,cityFlash,data.reduceMotion);
+    cityFlash=Math.max(0,cityFlash-.017);
+  }
   let frame=0,lastTimeSaved=0;
   function tick(t){
     now=t;
@@ -474,7 +526,7 @@
   // État de test disponible uniquement avec ?test=1 : aucun accès réseau ni privilège.
   if(new URLSearchParams(location.search).has('test'))window.__afterglowTest={
     state:()=>JSON.parse(JSON.stringify({data,game,view,modalOpen,activePower,hintPath})),
-    start:newGame,playPath,usePower,giveHint,purchase,purchasePack,claimDailyGift,claimMission,claimMilestone,hasMove,
+    start:newGame,playPath,usePower,giveHint,purchase,purchasePack,claimDailyGift,claimMission,claimMilestone,hasMove,collectCitySignal,
     render:()=>{drawCity(1000);drawBoard(1000);},win:winGame,lose:loseGame,show:showView
   };
   loadOrStart();requestAnimationFrame(tick);

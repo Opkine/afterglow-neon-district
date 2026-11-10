@@ -27,7 +27,10 @@ const browser={
   performance:{now:()=>2000},Date,Math,Number,Array,Object,String,JSON,Uint8Array,console
 };
 vm.createContext(browser);
+vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/vendor/tween.umd.js'),'utf8'),browser,{timeout:1500});
+browser.window.TWEEN=browser.TWEEN;
 vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/visuals.js'),'utf8'),browser,{timeout:1500});
+vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/cityscape.js'),'utf8'),browser,{timeout:1500});
 vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/skills.js'),'utf8'),browser,{timeout:1500});
 vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/main.js'),'utf8'),browser,{timeout:1500});
 testApi=browser.window.__afterglowTest;
@@ -84,6 +87,14 @@ testApi.start('level',1);testApi.win();state=testApi.state();
 assert.equal(state.data.level,2);
 assert(state.data.coins>0);
 assert.equal(state.data.finished,1);
+assert.equal(state.data.cityColors['1']?.startsWith('#'),true);
+const skyline=browser.window.AfterglowArt.buildings();
+assert.equal(skyline.length,81);
+assert.equal(new Set(skyline.map(b=>b.sector)).size,81);
+assert.equal(skyline.find(b=>b.sector===1).color,state.data.cityColors['1']);
+assert.equal(testApi.collectCitySignal(1),true,'First lit building can pay a discovery reward');
+assert.equal(testApi.collectCitySignal(1),false,'Same lit building cannot be farmed');
+assert.equal(testApi.collectCitySignal(2),false,'Dark buildings cannot pay out');
 
 // A first victory creates claimable missions; daily gifts and awards are single-use.
 assert.equal(testApi.claimMission('win'),true);
@@ -116,6 +127,12 @@ for(let lv=2;lv<=5;lv++){
   if(lv<5)el('next').onclick();
 }
 state=testApi.state();assert.equal(state.data.finished,5);
+assert.equal(testApi.collectCitySignal(2),true);
+assert.equal(testApi.collectCitySignal(3),true);
+assert.equal(testApi.collectCitySignal(4),false,'Maximum three city signals per day');
+testApi.show('city');
+testApi.render();
+assert.equal(testApi.state().data.citySignals.visited.length,3);
 assert.equal(testApi.claimMilestone(5),true);
 assert.equal(testApi.claimMilestone(5),false);
 assert.equal(testApi.purchase('color'),true);
@@ -126,4 +143,4 @@ testApi.start('level',6);state=testApi.state();
 assert.equal(testApi.usePower('color',4),true);
 assert.equal(testApi.state().data.inventory.color,0);
 
-console.log('PASS: 80 campaign levels, 560 turns, saving, timed hints, booster inventory/use, quests, daily gift, milestones and shop.');
+console.log('PASS: 80 campaign levels, 560 turns, reactive city (81 towers), colored unlocks, daily urban discovery limit, hints, boosters, quests and shop.');

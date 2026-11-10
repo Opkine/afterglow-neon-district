@@ -18,9 +18,13 @@
 | Quotidienne | Défi de 150 secondes, trois missions, cadeau gratuit | Oui, local |
 | Long terme | 80 niveaux, huit quartiers, boutique de pouvoirs | Oui, v1.2 |
 
-**Différenciation :** des chaînes traçables à un doigt déclenchent une
-réanimation visible de la même métropole. C'est une combinaison de mécaniques
-connues et d'une mise en scène particulière, pas une invention garantie inédite.
+**Différenciation :** des chaînes traçables à un doigt projettent l'électricité
+dans une **même ville persistante** : chaque victoire allume une façade
+particulière de la couleur gagnée, chaque dizaine révèle un monument et les
+immeubles éclairés sont visitables au toucher. Trois visites distinctes
+apportent des éclats une fois par jour. Ce sont des mécaniques connues
+assemblées à un méta-jeu visuel ; leur originalité perçue et leur pouvoir de
+rétention devront être mesurés auprès de vrais joueurs.
 
 ## Public et monétisation
 
@@ -41,6 +45,8 @@ connues et d'une mise en scène particulière, pas une invention garantie inédi
 
 - [x] Base de jeu et rendu natif Android conçu pour la lecture hors ligne.
 - [x] Gestion des 80 niveaux, défis, progression, effets et paramètres.
+- [x] 80 activations architecturales colorées, huit étapes de monuments,
+  interactions tactiles et quotas anti-farm des signaux quotidiens.
 - [x] Tests unitaires déterministes du moteur (80 niveaux / 560 coups).
 - [x] APK Android compilée par GitHub Actions, artefact téléchargé et contenu ZIP vérifié.
 - [ ] Installation/désinstallation/mise à jour sur un Samsung Galaxy récent.
@@ -71,6 +77,8 @@ promesses de revenus. La réputation du jeu dépendra des tests et des correctio
    travaillés à la main : l'équilibrage doit être confirmé avec des joueurs.
 2. L'apparence actuelle est en Canvas et CSS. Elle est soignée mais le rendu
    de chaque Android/WebView n'a pas été inspecté visuellement.
+   Une vue de référence générée sur Canvas natif compare les étapes 0, 4, 20,
+   40 et 80 de la ville. Elle ne remplace pas un test réel sur Samsung.
 3. L'application n'a pour l'instant ni serveur, ni classement mondial,
    ni monétisation — choix volontaire pour une V1 stable et vérifiable.
 4. Les thèmes n'ont aucun avantage sur la difficulté. La campagne est rejouable.

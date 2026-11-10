@@ -5,7 +5,25 @@ Jeu Android de puzzle à réactions en chaîne — **© 2026 LayAdam corp.**
 > Une cité plongée dans le noir. Reliez trois cristaux ou plus, déclenchez des
 > réactions spectaculaires et rallumez progressivement les quartiers.
 
-## Version 1.2.0 — pouvoirs, chrono et progression vivante
+## Version 1.3.0 — une cité vivante, lumineuse et interactive
+
+### Ce qui distingue AFTERGLOW
+
+Le joueur ne débloque pas seulement des niveaux : **chaque victoire réveille
+un bâtiment identifiable** dans une même métropole. La couleur des objectifs
+réussis devient la couleur de sa façade. Les chaînes projettent des impulsions
+dans la ville, qui se transforme durablement et dévoile de nouveaux monuments
+à 10, 20, 30… 80 secteurs. Les joueurs peuvent toucher les bâtiments allumés
+pour les faire réagir et collecter jusqu'à trois signaux rémunérés par jour
+(15 éclats chacun). Les façades encore éteintes montrent ce qu'il reste à
+conquérir. La récompense est donc visuelle, exploratoire et économique.
+
+![Progression visuelle de 0 à 80 secteurs](docs/city-progression-v13.jpg)
+
+Le panorama est dessiné à l'aide de Canvas 2D original, complété par
+[Tween.js](https://github.com/tweenjs/tween.js) pour interpoler les illuminations.
+Les 81 emplacements répartissent les 80 secteurs en profondeur, même au début.
+Le rendu est autonome, sans appel réseau, avec respect des animations réduites.
 
 La base jouable comprend :
 
@@ -27,7 +45,11 @@ La base jouable comprend :
 - 80 niveaux de campagne générés par des graines déterministes.
 - Objectifs de deux couleurs, nombre de coups, étoiles et éclats.
 - Ville cyberpunk en profondeur : architecture à trois plans, enseignes, lune,
-  brumes atmosphériques, véhicules, reflets et éclairage progressif des quartiers.
+  aurores polychromes, véhicules, reflets, monuments et éclairage progressif.
+- Lueur de chaque bâtiment personnalisée par la couleur des objectifs du niveau ;
+  panorama interactif dans VILLE et mini-panorama lors d'une victoire.
+- Trois signaux quotidiens récoltables sur trois bâtiments distincts, plafonnés
+  à 45 éclats par jour pour éviter une économie illimitée.
 - 10 effets sonores libres CC0 mixés par Howler.js, musique électro-ambient
   originale, réglages séparés musique/SFX et célébrations canvas-confetti.
 - Typographie Inter locale, entièrement hors connexion.
@@ -38,7 +60,7 @@ La base jouable comprend :
 - Projet Android natif embarquant l'intégralité du jeu dans une WebView locale.
 
 La **version Android 1.0.0 de développement** a été compilée avec succès par GitHub
-Actions le 10 novembre 2026. La V1.2.0 introduit les mécaniques détaillées ci-dessus.
+Actions le 10 novembre 2026. La V1.3.0 introduit les mécaniques détaillées ci-dessus.
 Ce dépôt ne constitue pas à lui seul une publication Google Play. L'installation
 sur appareils physiques, la signature de production, la qualité graphique finale
 et l'équilibrage doivent être validés avant de parler de version commerciale terminée.
@@ -58,19 +80,19 @@ Android pour un usage intégralement hors ligne.
 1. Dans le dépôt, ouvrir l'onglet **Actions**.
 2. Choisir **Android APK** puis **Run workflow**.
 3. Attendre le statut vert : les sources HTML/CSS/JS sont intégrées à l'APK.
-4. Télécharger l'artefact **AFTERGLOW-v1.2-Android-debug-APK**.
+4. Télécharger l'artefact **AFTERGLOW-v1.3-Android-debug-APK**.
 5. Extraire `app-debug.apk` et l'installer sur un smartphone Android compatible.
 
 **Attention :** APK de test (clé de débogage), pas APK commercial signé. Une
 clé Android debug régénérée sur un nouveau runner CI peut empêcher une mise à
 jour par-dessus une ancienne version : une signature stable est indispensable
 pour les futures mises à jour sans désinstallation ni perte de sauvegarde.
-La **V1.2 Preview** utilise donc temporairement le package Android indépendant
-`com.layadam.afterglow.preview12` et apparaît sous le nom `AFTERGLOW V1.2`.
-Elle s'installe à côté des V1.0 et V1.1, dont les sauvegardes restent intactes,
+La **V1.3 Preview** utilise donc temporairement le package Android indépendant
+`com.layadam.afterglow.preview13` et apparaît sous le nom `AFTERGLOW V1.3`.
+Elle s'installe à côté des V1.0, V1.1 et V1.2, dont les sauvegardes restent intactes,
 mais elle **commence une nouvelle progression** : les données Android d'un package
 ne sont pas automatiquement transférées à un autre. Ne désinstallez pas les
-versions précédentes avant d'avoir validé cette V1.2. La signature Play App
+versions précédentes avant d'avoir validé cette V1.3. La signature Play App
 Signing, la génération d'un fichier AAB de release, les tests
 Samsung et la fiche Play Store restent à finaliser. L'application cible l'API 36
 (Android 16), avec Android 8.0 comme version minimale.
@@ -92,12 +114,15 @@ THIRD_PARTY.md             Bibliothèques et licences redistribuées
 node tests/engine.cjs
 node tests/skills.cjs
 node tests/assets.cjs
+# QA graphique facultative avec @napi-rs/canvas dans l'environnement :
+node tests/render-city.cjs
 ```
 
 Les tests du moteur couvrent le parcours de 80 niveaux et au moins 560 coups,
 la chute des cristaux, le rendu Canvas avec contexte simulé, la persistance,
-les indices, les pouvoirs, les missions, la boutique, le défi quotidien et les
-récompenses. `tests/smoke.cjs` est un test visuel
+les indices, les pouvoirs, les missions, la boutique, le défi quotidien, les
+bâtiments et les signaux de la ville. La QA graphique compare également les
+pixels colorés entre cinq stades. `tests/smoke.cjs` est un test visuel
 Playwright supplémentaire, à exécuter dans un environnement autorisant Chromium
 et avec le serveur local actif.
 

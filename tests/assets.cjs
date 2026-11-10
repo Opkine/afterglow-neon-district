@@ -6,7 +6,7 @@ const file=(name)=>fs.readFileSync(path.join(root,name));
 const html=file('game/index.html').toString('utf8');
 const scripts=[
   'vendor/howler.core.min.js','vendor/confetti.browser.min.js',
-  'soundtrack.js','visuals.js','skills.js','main.js'
+  'vendor/tween.umd.js','soundtrack.js','visuals.js','cityscape.js','skills.js','main.js'
 ];
 let position=0;
 for(const name of scripts){
@@ -26,10 +26,12 @@ for(const sample of samples){
 assert.equal(file('game/fonts/InterVariable.woff2').toString('ascii',0,4),'wOF2');
 assert(file('game/vendor/LICENSE-howler.md').length>200);
 assert(file('game/vendor/LICENSE-confetti.txt').length>200);
+assert(file('game/vendor/TWEEN_LICENSE.txt').toString('utf8').includes('The MIT License'));
+assert(file('game/cityscape.js').toString('utf8').includes('const buildings=[]'));
 assert(file('game/audio/LICENSE-kenney.txt').length>80);
 assert(file('game/fonts/LICENSE-Inter.txt').length>200);
 const gradle=file('android/app/build.gradle').toString('utf8');
-assert(gradle.includes("versionName '1.2.0'"));
-assert(gradle.includes('versionCode 3'));
-assert(gradle.includes("applicationIdSuffix '.preview12'"));
-console.log(`PASS: ${scripts.length} local scripts, ${samples.length} CC0 WAV files, OFL font, license notices, offline load order, v1.2.0.`);
+assert(gradle.includes("versionName '1.3.0'"));
+assert(gradle.includes('versionCode 4'));
+assert(gradle.includes("applicationIdSuffix '.preview13'"));
+console.log(`PASS: ${scripts.length} local scripts, ${samples.length} CC0 WAV files, OFL font, MIT licenses, offline load order, v1.3.0.`);
