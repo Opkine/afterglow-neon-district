@@ -2,59 +2,50 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#060b1e">
-  <meta name="description" content="AFTERGLOW — Réveille une cité néon à coups de réactions en chaîne.">
-  <title>AFTERGLOW • Neon District</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#090e29">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>ASTRA TIDE · Les Jardins du Vide</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="shell" id="app">
-    <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+  <div id="app" class="app">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark">✦</span><div><strong>AFTER<span>GLOW</span></strong><small>NEON DISTRICT</small></div></div>
-      <div class="top-currency" title="Éclats gagnés"><span class="coin">✦</span><b id="coins">0</b></div>
+      <button class="brand" data-go="home" aria-label="Accueil"><span class="brand-mark">✦</span><span><strong>ASTRA<span class="accent">TIDE</span></strong><small>LES JARDINS DU VIDE</small></span></button>
+      <div class="wallet" aria-label="Éclats célestes"><span>✧</span><b id="wallet">0</b></div>
     </header>
-    <section class="city-panel" aria-label="Aperçu de la cité">
-      <canvas id="city" width="720" height="310" aria-label="Ville de nuit qui s'illumine en progressant"></canvas>
-      <div class="city-hud"><span id="district-label">DISTRICT 01 · LES TOITS</span><span id="power-label">0% ÉCLAIRÉ</span></div>
-      <div class="city-banner" id="city-banner"><span class="pulse-dot"></span> LA VILLE ATTEND TON ÉTINCELLE</div>
-    </section>
-    <section class="mission" id="mission">
-      <div class="level-line"><div><span class="eyebrow" id="mode-label">CAMPAGNE</span><h1 id="level-title">NIVEAU 01</h1></div><div class="mission-metrics"><div class="timer-pill" title="Temps écoulé"><span>◷</span><b id="timer-label">00:00</b></div><div class="level-pill"><span id="moves-label">24</span><small>COUPS</small></div></div></div>
-      <div class="goals" id="goals" aria-label="Objectifs du niveau"></div>
-      <div class="progress-track"><div id="score-bar"></div></div>
-    </section>
-    <section class="gameplay" id="gameplay">
-      <div class="board-frame"><canvas id="board" width="600" height="700" aria-label="Grille de puzzle tactile, relier au moins trois cristaux identiques"></canvas></div>
-      <div class="powerbar" aria-label="Pouvoirs utilisables">
-        <button class="power-slot assist" id="ask-hint" title="Afficher un chemin possible"><span class="power-icon">⌁</span><small>INDICE</small></button>
-        <button class="power-slot" data-power="bomb" title="Bombe 3×3"><span class="power-icon">✹</span><small>×<b id="count-bomb">1</b></small></button>
-        <button class="power-slot" data-power="row" title="Laser horizontal"><span class="power-icon">⇆</span><small>×<b id="count-row">1</b></small></button>
-        <button class="power-slot" data-power="column" title="Laser vertical"><span class="power-icon">↕</span><small>×<b id="count-column">1</b></small></button>
-        <button class="power-slot" data-power="color" title="Prisme chromatique"><span class="power-icon">✧</span><small>×<b id="count-color">0</b></small></button>
-      </div>
-      <div class="charge-strip"><span>ÉNERGIE NÉON</span><div class="charge-track"><div id="charge-fill"></div></div><span>100% = BONUS</span></div>
-      <div class="game-caption"><span id="hint-text">Glisse sur 3 cristaux identiques ou plus</span><span id="combo-text">COMBO x1</span></div>
-    </section>
-    <section class="secondary hidden" id="secondary"></section>
-    <nav class="nav" aria-label="Navigation principale">
-      <button class="nav-btn active" data-view="play"><span>◈</span><small>JOUER</small></button>
-      <button class="nav-btn" data-view="city"><span>▥</span><small>VILLE</small></button>
-      <button class="nav-btn" data-view="daily"><span>◎</span><small>DÉFI</small></button>
-      <button class="nav-btn" data-view="shop"><span>◉</span><small>BOUTIQUE</small></button>
-      <button class="nav-btn" data-view="settings"><span>⚙</span><small>OPTIONS</small></button>
-    </nav>
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <div class="veil hidden" id="modal-veil"><section class="modal" id="modal" role="dialog" aria-modal="true" aria-live="polite"></section></div>
-  </main>
-  <script src="vendor/howler.core.min.js" defer></script>
-  <script src="vendor/confetti.browser.min.js" defer></script>
-  <script src="vendor/tween.umd.js" defer></script>
-  <script src="soundtrack.js" defer></script>
-  <script src="visuals.js" defer></script>
-  <script src="cityscape.js" defer></script>
-  <script src="skills.js" defer></script>
-  <script src="main.js" defer></script>
+    <main id="home" class="screen active scroll-screen">
+      <section class="hero">
+        <div class="hero-art" role="img" aria-label="Archipel céleste lumineux, sur un océan cosmique">
+          <span class="hero-kicker">UNE AVENTURE COSMIQUE</span>
+          <div class="hero-title"><span>FAIS DANSER</span><strong>LA GRAVITÉ</strong></div>
+          <div class="hero-orb"><span class="orbit o1"></span><span class="orbit o2"></span><span class="sun">✦</span><i class="satellite s1"></i><i class="satellite s2"></i><i class="satellite s3"></i></div>
+          <div class="hero-bottom">Un geste peut réveiller tout un univers.</div>
+        </div>
+        <div class="mission"><span class="eyebrow">TA PROCHAINE EXPÉDITION</span><div class="mission-line"><div><h1 id="levelTitle">LE PREMIER SOUFFLE</h1><p id="levelSubtitle">Chapitre 01 · Jardins silencieux</p></div><span class="level-badge" id="levelBadge">01</span></div><button id="playBtn" class="primary-btn"><span>JOUER MAINTENANT</span><span>↗</span></button></div>
+      </section>
+      <section class="two-cards">
+        <button id="dailyBtn" class="feature-card daily"><span class="icon-disc">☀</span><strong>LE DÉFI DU JOUR</strong><small>Un ciel unique chaque jour</small><span class="tiny-action">DÉCOUVRIR ↗</span></button>
+        <button data-go="atlas" class="feature-card atlas-tile"><span class="icon-disc">❀</span><strong>TON JARDIN D’ÉTOILES</strong><small id="atlasTeaser">0 constellations réveillées</small><span class="tiny-action">EXPLORER ↗</span></button>
+      </section>
+      <section class="stats-strip"><div><strong id="homeStars">0</strong><span>ÉTOILES</span></div><div><strong id="homeHigh">0</strong><span>MEILLEUR SCORE</span></div><div><strong id="homeCompleted">0/24</strong><span>JARDINS</span></div></section>
+      <p class="small-note">✦ Chaque trajectoire compte. Aucun achat réel, aucun réseau nécessaire.</p>
+    </main>
+
+    <main id="play" class="screen play-screen">
+      <div class="play-top"><button id="pauseBtn" class="round-button" aria-label="Pause">Ⅱ</button><div class="play-heading"><span id="gameMode">CHAPITRE 01</span><strong id="gameName">LE PREMIER SOUFFLE</strong></div><div class="play-timer"><span>◷</span><strong id="timer">1:34</strong></div></div>
+      <div class="goal-area"><div class="goal-progress"><span id="goalText">✧ 0 / 4 ÉTOILES GUIDÉES</span><span id="livesText">♥ ♥ ♥ ♥ ♥</span></div><div class="progress-track"><div id="goalBar"></div></div></div>
+      <div class="canvas-shell"><canvas id="gameCanvas" width="720" height="1120" aria-label="Champ gravitationnel interactif. Glisse le doigt pour attirer les étoiles vers les portails de leur couleur."></canvas><div id="coach" class="coach hidden"><strong id="coachTitle">GUIDE LES LUMIÈRES</strong><span id="coachBody">Glisse ton doigt près des orbes pour courber leur trajectoire vers le portail de leur couleur.</span><button id="coachDismiss">C'EST PARTI ✦</button></div><div id="gameOverlay" class="game-overlay hidden"></div></div>
+      <div class="play-footer"><div><strong id="combo">COMBO × 0</strong><small id="score">SCORE 0000</small></div><button id="pulseBtn" class="pulse-btn" disabled><span class="pulse-icon">◉</span><span><strong>ONDE ASTRALE</strong><small id="pulseCharge">CHARGE 0%</small></span><span class="pulse-meter"><i id="pulseBar"></i></span></button></div>
+    </main>
+
+    <main id="atlas" class="screen scroll-screen atlas-screen"><div class="section-intro"><span class="eyebrow">TA GALAXIE PERSONNELLE</span><h1>LE JARDIN<br><em>DES ÉTOILES</em></h1><p>Chaque expédition réveille une constellation. Ton ciel ne sera jamais exactement celui d’un autre explorateur.</p></div><div id="atlasCanvasWrap" class="atlas-visual"><canvas id="atlasCanvas" width="720" height="650"></canvas></div><div class="section-heading"><h2>CONSTELLATIONS</h2><span id="atlasCount">0 / 24</span></div><div id="atlasList" class="atlas-list"></div></main>
+
+    <main id="shop" class="screen scroll-screen"><div class="section-intro"><span class="eyebrow">ATELIER DES COSMONAUTES</span><h1>TES POUVOIRS<br><em>DU CIEL</em></h1><p>Échange les éclats gagnés en jouant contre des capacités durables et de nouvelles couleurs d’énergie.</p></div><div class="shop-section"><h2>AMÉLIORATIONS</h2><div id="upgradeList"></div><h2>HARMONIES VISUELLES</h2><div id="skinList"></div></div><p class="small-note">Tous les éléments se débloquent en jouant. Pas de transaction, de publicité ou de loterie payante.</p></main>
+
+    <main id="options" class="screen scroll-screen"><div class="section-intro"><span class="eyebrow">CONFORT DE VOYAGE</span><h1>LES RÉGLAGES<br><em>DU COSMOS</em></h1></div><div class="settings-list"><label>Musique spatiale<input id="settingMusic" type="checkbox" checked></label><label>Effets sonores<input id="settingSound" type="checkbox" checked></label><label>Vibrations<input id="settingHaptics" type="checkbox" checked></label><label>Animations réduites<input id="settingReduced" type="checkbox"></label></div><div class="about-card"><h2>ASTRA TIDE</h2><p>Les Jardins du Vide · Version 0.1.0</p><p>© 2026 LayAdam corp.</p><p>Jeu original hors connexion, sans compte, achats réels ni collecte de données. Progression enregistrée sur cet appareil.</p><button id="resetBtn" class="text-button">Réinitialiser ma progression</button></div></main>
+    <nav id="nav" class="bottom-nav"><button data-go="home" class="selected"><span>⌂</span>ACCUEIL</button><button data-go="atlas"><span>✧</span>GALAXIE</button><button data-go="shop"><span>✦</span>ATELIER</button><button data-go="options"><span>⚙</span>OPTIONS</button></nav>
+  </div>
+  <script src="engine.js"></script><script src="sound.js"></script><script src="painter.js"></script><script src="main.js"></script>
 </body>
 </html>

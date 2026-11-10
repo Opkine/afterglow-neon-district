@@ -1,15 +1,14 @@
-name: Android APK
+name: ASTRA TIDE — Android preview
 
 on:
   push:
-    branches: [main]
-  pull_request:
+    branches: [astra-tide]
   workflow_dispatch:
 
 jobs:
   android:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
@@ -24,26 +23,23 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
-      - name: Installer le SDK Android 36
+      - name: Android SDK 36
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
-      - name: Intégrer les ressources de jeu dans l'APK
+      - name: Run engine and asset tests
+        run: node --test tests/engine.cjs tests/assets.cjs
+      - name: Bundle entirely offline game
         run: |
           mkdir -p android/app/src/main/assets/game
           cp -R game/. android/app/src/main/assets/game/
-      - name: Tests de logique déterministes
-        run: |
-          node tests/engine.cjs
-          node tests/skills.cjs
-          node tests/assets.cjs
-      - name: Compiler APK installable de test
+      - name: Build installable debug APK
         run: gradle -p android --no-daemon :app:assembleDebug
-      - name: Vérifier la signature et le contenu APK
+      - name: Verify APK package
         run: |
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs android/app/build/outputs/apk/debug/app-debug.apk
           unzip -t android/app/build/outputs/apk/debug/app-debug.apk >/dev/null
       - uses: actions/upload-artifact@v4
         with:
-          name: AFTERGLOW-v1.3-Android-debug-APK
+          name: ASTRA-TIDE-v0.1-Android-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30

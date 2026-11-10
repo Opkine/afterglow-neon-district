@@ -1,4 +1,4 @@
-package com.layadam.afterglow;
+package com.layadam.astratide;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -80,7 +80,7 @@ public class MainActivity extends Activity {
 
     @Override public void onBackPressed() {
         if (gameView != null) gameView.evaluateJavascript(
-                "window.afterglowBack && window.afterglowBack()", null);
+                "window.astraBack && window.astraBack()", null);
         else super.onBackPressed();
     }
 

@@ -1,146 +1,53 @@
-const fs=require('node:fs');
-const path=require('node:path');
-const vm=require('node:vm');
 const assert=require('node:assert/strict');
-
-const stored=new Map();
-const noop=()=>{};
-const gradient=()=>({addColorStop:noop});
-const ctx=()=>new Proxy({createLinearGradient:gradient,createRadialGradient:gradient}, {get:(obj,prop)=>obj[prop]??noop,set:(obj,prop,value)=>{obj[prop]=value;return true;}});
-class Element {
-  constructor(id=''){this.id=id;this.dataset={};this.value='';this.style={};this.classList={add:noop,remove:noop,toggle:noop,contains:()=>false};this.innerHTML='';this.textContent='';this.events={};}
-  getContext(){return ctx();}
-  addEventListener(name,fn){this.events[name]=fn;}
-  getBoundingClientRect(){return {left:0,top:0,width:600,height:700};}
-  setPointerCapture(){}
-  querySelectorAll(){return [];}
-  setAttribute(){}
-}
-const elements=new Map();const el=id=>{if(!elements.has(id))elements.set(id,new Element(id));return elements.get(id);};
-const nav=['play','city','daily','settings'].map(v=>{const e=new Element();e.dataset.view=v;return e;});
-let testApi;
-const browser={
-  document:{hidden:false,documentElement:{style:{setProperty:noop}},getElementById:el,createElement:()=>new Element(),querySelectorAll:(s)=>s==='[data-view]'?nav:[],addEventListener:noop},
-  localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)},
-  navigator:{vibrate:noop},location:{search:'?test=1'},URLSearchParams,
-  window:{},requestAnimationFrame:noop,clearTimeout:noop,setTimeout:noop,
-  performance:{now:()=>2000},Date,Math,Number,Array,Object,String,JSON,Uint8Array,console
-};
-vm.createContext(browser);
-vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/vendor/tween.umd.js'),'utf8'),browser,{timeout:1500});
-browser.window.TWEEN=browser.TWEEN;
-vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/visuals.js'),'utf8'),browser,{timeout:1500});
-vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/cityscape.js'),'utf8'),browser,{timeout:1500});
-vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/skills.js'),'utf8'),browser,{timeout:1500});
-vm.runInContext(fs.readFileSync(path.join(__dirname,'../game/main.js'),'utf8'),browser,{timeout:1500});
-testApi=browser.window.__afterglowTest;
-assert(testApi,'A test interface must exist');
-let state=testApi.state();
-assert.equal(state.game.level,1);
-assert.equal(state.game.tiles.length,42);
-assert(testApi.hasMove(state.game.tiles),'The starting board must have 3 connected crystals');
-assert.equal(state.modalOpen,true,'Tutorial should appear on the first install');
-el('begin').onclick();
-assert.equal(testApi.state().modalOpen,false);
-
-function pathFor(tiles){
-  const adj=i=>[i%6>0?i-1:-1,i%6<5?i+1:-1,i>=6?i-6:-1,i<36?i+6:-1].filter(n=>n>=0);
-  function dfs(path){if(path.length>=3)return path;for(const n of adj(path.at(-1)))if(tiles[n]===tiles[path[0]]&&!path.includes(n)){const found=dfs([...path,n]);if(found)return found;}return null;}
-  for(let i=0;i<tiles.length;i++){const path=dfs([i]);if(path)return path;}
-  return null;
-}
-
-// A valid gesture changes only one move, scores points, and persists the board.
-let p=pathFor(state.game.tiles);assert(p);
-testApi.playPath(p);state=testApi.state();
-assert.equal(state.game.moves,25);
-assert(state.game.score>0);
-assert(testApi.hasMove(state.game.tiles));
-assert(stored.has('afterglow.neondistrict.save.v1'));
-testApi.render();
-
-// Campaign generation and rendering must work throughout the entire 80-level arc.
-for(let lv=1;lv<=80;lv++){
-  testApi.start('level',lv);state=testApi.state();
-  assert.equal(state.game.level,lv);
-  assert(testApi.hasMove(state.game.tiles),`Level ${lv} has no legal path`);
-  if(lv%7===0)assert.equal(state.game.energyGoal,85,`Reactor level ${lv}`);
-  else if(lv%5===0)assert.equal(state.game.targets.length,3,`Three-color mission ${lv}`);
-  else if(lv%9===0)assert.equal(state.game.missionType,'express',`Express mission ${lv}`);
-  testApi.render();
-  // Simulate several turns, including gravity and tile refills.
-  for(let turn=0;turn<Math.min(7,state.game.moves);turn++){
-    p=pathFor(state.game.tiles);assert(p,`No path at level ${lv}, turn ${turn}`);
-    testApi.playPath(p);state=testApi.state();
-    assert(testApi.hasMove(state.game.tiles));
+const test=require('node:test');
+const {GravityGame,profile,gateways,W,H}=require('../game/engine.js');
+test('24 campaign chapters with escalating mechanics',()=>{
+  assert.equal(profile(1).colors,1);assert.equal(profile(4).colors,3);
+  assert.equal(profile(2).vortex,false);assert.equal(profile(9).vortex,true);assert.equal(profile(14).meteor,true);
+  assert.equal(profile(24).target>profile(1).target,true);
+  assert.equal(gateways(3).length,3);assert.equal(W,720);assert.equal(H,1120);
+});
+test('same seed yields the same particles and time',()=>{
+  const a=new GravityGame({stage:11,seed:919}),b=new GravityGame({stage:11,seed:919});
+  for(let i=0;i<300;i++){a.step({active:true,x:340,y:560},1/60);b.step({active:true,x:340,y:560},1/60);}
+  assert.deepEqual(a.snapshot(),b.snapshot());
+});
+test('a correctly coloured light enters its portal and scores',()=>{
+  const g=new GravityGame({stage:2});const gate=g.gates[0];g.spawnTime=50;
+  g.motes=[{id:1,type:gate.type,x:gate.x,y:gate.y-54,vx:0,vy:160,age:0,trail:[]}];
+  const ev=g.step({},1/60);assert.ok(ev.find(e=>e.kind==='capture'));
+  assert.equal(g.stats.captured,1);assert.equal(g.stats.score,98);assert.equal(g.stats.charge,13);
+});
+test('wrong portal breaks a combo and loses a heart',()=>{
+  const g=new GravityGame({stage:2});const gate=g.gates[0];g.spawnTime=50;g.stats.combo=3;
+  g.motes=[{id:1,type:1,x:gate.x,y:gate.y,vx:0,vy:110,age:0,trail:[]}];
+  const ev=g.step({},1/60);assert.equal(g.stats.lives,g.config.lives-1);assert.equal(g.stats.combo,0);assert.ok(ev.some(e=>e.kind==='miss'));
+});
+test('shield perk absorbs a collision without consuming hearts',()=>{
+  const g=new GravityGame({stage:1,shield:2});g.spawnTime=50;g.motes=[{id:1,type:0,x:330,y:1060,vx:0,vy:110,age:0,trail:[]}];
+  const ev=g.step({},1/60);assert.equal(g.stats.lives,g.config.lives);assert.equal(g.perks.shield,1);assert.ok(ev.some(e=>e.kind==='shield'));
+});
+test('charged pulse aims motes to their assigned portals',()=>{
+  const g=new GravityGame({stage:4});g.stats.charge=100;g.motes=[{id:1,type:2,x:100,y:460,vx:0,vy:110,age:0,trail:[]}];
+  assert.equal(g.pulse(),true);assert.ok(g.motes[0].vx>0);assert.equal(g.stats.charge,0);assert.equal(g.pulse(),false);
+});
+test('victory grants stars and campaign score',()=>{
+  const g=new GravityGame({stage:1});const gate=g.gates[0];g.spawnTime=50;
+  for(let i=0;i<g.config.target;i++){g.motes=[{id:i+1,type:0,x:gate.x,y:gate.y,vx:0,vy:110,age:0,trail:[]}];g.step({},1/60);}
+  assert.equal(g.stats.status,'win');assert.equal(g.stars,3);assert.ok(g.stats.score>0);
+});
+test('snapshot restoration keeps the journey intact',()=>{
+  const g=new GravityGame({stage:17,radius:2,shield:1});
+  for(let i=0;i<60;i++)g.step({active:true,x:300,y:400},1/60);
+  const restored=GravityGame.fromSnapshot(JSON.parse(JSON.stringify(g.snapshot())));
+  assert.ok(restored);assert.deepEqual(restored.snapshot(),g.snapshot());
+  assert.equal(GravityGame.fromSnapshot({version:1,stats:{status:'running'},motes:[{x:NaN}]}),null);
+});
+test('all chapter physics modes step without crashing or nonfinite positions',()=>{
+  for(let stage=1;stage<=24;stage++){
+    const g=new GravityGame({stage,seed:stage});
+    for(let i=0;i<550;i++){g.step({active:i%120<90,x:340+150*Math.sin(i*.07),y:650+260*Math.cos(i*.1)},1/60);
+      for(const m of g.motes)assert.ok(Number.isFinite(m.x)&&Number.isFinite(m.y));
+    }
   }
-}
-
-// Daily seed is stable and independently playable.
-testApi.start('daily');const daily=testApi.state().game;
-testApi.start('daily');assert.deepEqual(testApi.state().game.tiles,daily.tiles);
-assert.equal(daily.moves,24);
-testApi.render();
-
-// Award/progression path.
-testApi.start('level',1);testApi.win();state=testApi.state();
-assert.equal(state.data.level,2);
-assert(state.data.coins>0);
-assert.equal(state.data.finished,1);
-assert.equal(state.data.cityColors['1']?.startsWith('#'),true);
-const skyline=browser.window.AfterglowArt.buildings();
-assert.equal(skyline.length,81);
-assert.equal(new Set(skyline.map(b=>b.sector)).size,81);
-assert.equal(skyline.find(b=>b.sector===1).color,state.data.cityColors['1']);
-assert.equal(testApi.collectCitySignal(1),true,'First lit building can pay a discovery reward');
-assert.equal(testApi.collectCitySignal(1),false,'Same lit building cannot be farmed');
-assert.equal(testApi.collectCitySignal(2),false,'Dark buildings cannot pay out');
-
-// A first victory creates claimable missions; daily gifts and awards are single-use.
-assert.equal(testApi.claimMission('win'),true);
-assert.equal(testApi.claimMission('win'),false);
-assert.equal(testApi.claimDailyGift(),true);
-assert.equal(testApi.claimDailyGift(),false);
-let afterGift=testApi.state();
-assert(afterGift.data.inventory.bomb>=2);
-assert(afterGift.data.coins>state.data.coins);
-
-// Timed help is a valid adjacent same-color path. Boosters never spend a move.
-el('next').onclick();
-state=testApi.state();assert.equal(state.game.level,2);
-const suggested=testApi.giveHint(false);assert(suggested.length>=3);
-assert.equal(new Set(suggested).size,suggested.length);
-assert(suggested.every(i=>state.game.tiles[i]===state.game.tiles[suggested[0]]));
-const stock=state.data.inventory.bomb;
-assert.equal(testApi.usePower('bomb',14),true);
-const boosted=testApi.state();
-assert.equal(boosted.game.moves,state.game.moves,'Using a booster must not spend a turn');
-assert.equal(boosted.data.inventory.bomb,stock-1);
-assert(boosted.game.score>state.game.score);
-assert.equal(testApi.hasMove(boosted.game.tiles),true);
-
-// Cash flow, milestone rewards and the shop are real persisted state changes.
-testApi.start('level',2);
-for(let lv=2;lv<=5;lv++){
-  if(lv>2)testApi.start('level',lv);
-  testApi.win();
-  if(lv<5)el('next').onclick();
-}
-state=testApi.state();assert.equal(state.data.finished,5);
-assert.equal(testApi.collectCitySignal(2),true);
-assert.equal(testApi.collectCitySignal(3),true);
-assert.equal(testApi.collectCitySignal(4),false,'Maximum three city signals per day');
-testApi.show('city');
-testApi.render();
-assert.equal(testApi.state().data.citySignals.visited.length,3);
-assert.equal(testApi.claimMilestone(5),true);
-assert.equal(testApi.claimMilestone(5),false);
-assert.equal(testApi.purchase('color'),true);
-assert.equal(testApi.state().data.inventory.color,1);
-el('viewcity').onclick();
-testApi.show('shop');assert.equal(testApi.state().view,'shop');
-testApi.start('level',6);state=testApi.state();
-assert.equal(testApi.usePower('color',4),true);
-assert.equal(testApi.state().data.inventory.color,0);
-
-console.log('PASS: 80 campaign levels, 560 turns, reactive city (81 towers), colored unlocks, daily urban discovery limit, hints, boosters, quests and shop.');
+});
