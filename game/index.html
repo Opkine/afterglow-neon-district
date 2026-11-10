@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#080b20">
+  <meta name="description" content="AFTERGLOW — Réveille une cité néon à coups de réactions en chaîne.">
+  <title>AFTERGLOW • Neon District</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell" id="app">
+    <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">✦</span><div><strong>AFTER<span>GLOW</span></strong><small>NEON DISTRICT</small></div></div>
+      <div class="top-currency" title="Éclats gagnés"><span class="coin">✦</span><b id="coins">0</b></div>
+    </header>
+    <section class="city-panel" aria-label="Aperçu de la cité">
+      <canvas id="city" width="720" height="310" aria-label="Ville de nuit qui s'illumine en progressant"></canvas>
+      <div class="city-hud"><span id="district-label">DISTRICT 01 · LES TOITS</span><span id="power-label">0% ÉCLAIRÉ</span></div>
+      <div class="city-banner" id="city-banner"><span class="pulse-dot"></span> LA VILLE ATTEND TON ÉTINCELLE</div>
+    </section>
+    <section class="mission" id="mission">
+      <div class="level-line"><div><span class="eyebrow" id="mode-label">CAMPAGNE</span><h1 id="level-title">NIVEAU 01</h1></div><div class="level-pill"><span id="moves-label">24</span><small>COUPS</small></div></div>
+      <div class="goals" id="goals" aria-label="Objectifs du niveau"></div>
+      <div class="progress-track"><div id="score-bar"></div></div>
+    </section>
+    <section class="gameplay" id="gameplay">
+      <div class="board-frame"><canvas id="board" width="600" height="700" aria-label="Grille de puzzle tactile, relier au moins trois cristaux identiques"></canvas></div>
+      <div class="game-caption"><span id="hint-text">Glisse sur 3 cristaux identiques ou plus</span><span id="combo-text">COMBO x1</span></div>
+    </section>
+    <section class="secondary hidden" id="secondary"></section>
+    <nav class="nav" aria-label="Navigation principale">
+      <button class="nav-btn active" data-view="play"><span>◈</span><small>JOUER</small></button>
+      <button class="nav-btn" data-view="city"><span>▥</span><small>VILLE</small></button>
+      <button class="nav-btn" data-view="daily"><span>◎</span><small>DÉFI</small></button>
+      <button class="nav-btn" data-view="settings"><span>⚙</span><small>OPTIONS</small></button>
+    </nav>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="veil hidden" id="modal-veil"><section class="modal" id="modal" role="dialog" aria-modal="true" aria-live="polite"></section></div>
+  </main>
+  <script src="main.js" defer></script>
+</body>
+</html>

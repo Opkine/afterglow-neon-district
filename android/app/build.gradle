@@ -1,0 +1,38 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.layadam.afterglow'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.layadam.afterglow'
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName '1.0.0'
+        resourceConfigurations += ['fr']
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // AAB Play Store à signer avec une clé conservée exclusivement
+            // dans les secrets CI, jamais dans ce dépôt public.
+        }
+    }
+
+    packaging {
+        resources.excludes += ['META-INF/AL2.0', 'META-INF/LGPL2.1']
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.14.0'
+}
